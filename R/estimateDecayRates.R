@@ -20,7 +20,7 @@
 #'gene networks from time series expression data. \emph{Scientific reports},
 #'8(1), 1-12.
 #'
-estimate.decay.rates <- function(data) {
+estimateDecayRates <- function(data) {
 
   time.steps <- dim(data)[1]
   num.genes <- dim(data)[2] - 1
