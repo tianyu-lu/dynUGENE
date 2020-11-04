@@ -121,7 +121,7 @@ inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
 
   # alpha inference adapted from dynGENIE3:
   if (!is.numeric(alpha)) {
-    alphas <- estimate.decay.rates(data)
+    alphas <- estimateDecayRates(data)
   } else if (length(alpha) == 1) {
     alphas <- rep(alpha, num.genes)
     alphas <- setNames(alphas, gene.names)
