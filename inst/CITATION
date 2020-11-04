@@ -1,0 +1,12 @@
+citHeader("To cite dynUGENE in publications use:")
+
+citEntry(
+  entry    = "Unpublished",
+  title    = "dynUGENE: Dynamical Uncertainty-aware GEne Network inference with Ensembles of trees. Unpublished",
+  author   = "Tianyu Lu",
+  note     = "Unpublished",
+  year     = "2020",
+  textVersion = paste(
+"Lu, T. (2020) dynUGENE: Dynamical Uncertainty-aware GEne Network inference with Ensembles of trees. Unpublished. URL https://github.com/tianyu-lu/dynUGENE"
+  )
+)
