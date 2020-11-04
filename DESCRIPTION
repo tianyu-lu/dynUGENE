@@ -1,6 +1,6 @@
 Package: dynUGENE
 Type: Package
-Title: Dynamic Uncertainty-aware Gene Network Inferences with Ensembles of Trees
+Title: Dynamic Uncertainty-Aware Gene Network Inference with Ensembles of Trees
 Version: 0.1.0
 Author: Tianyu Lu
 Maintainer: Tianyu Lu <tianyu.lu@mail.utoronto.ca>
@@ -13,7 +13,7 @@ RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
 Imports:
-    mclust, stats
+    mclust, stats, randomForest
 Suggests: 
     testthat,
     knitr,

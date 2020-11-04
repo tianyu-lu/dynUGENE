@@ -65,6 +65,30 @@ InfCriteriaCalculation <- function(loglikelihood,
                                    observations,
                                    probability) {
 
+  # Performing checks of user input
+  if (typeof(loglikelihood) != "double" & class(loglikelihood) != "numeric") {
+    stop("Loglikelihood type needs to double")
+  }
+
+  if(loglikelihood > 0) {
+    stop("Loglikelihood should be a negative value.")
+  }
+
+  if(nClusters <= 0) {
+    stop("nClusters should be a positive integer indicating the number of clusters.")
+  }
+
+  # An alternative to correct user input
+  if(nClusters < 0) {
+    warning("nClusters should be a positive integer indicating the number of clusters.
+            Input value corrected to be positive.", call. = FALSE)
+    nClusters <- abs(nClusters) # correct the input for user
+  }
+
+  if(sum(probability) != 1) {
+    stop("Input values for probability should sum to 1.")
+  }
+
   # Using a multinomial distribution to generate cluster memberships
   zValue <- t(stats::rmultinom(100, size = 1, prob = probability))
 

@@ -1,8 +1,8 @@
 ---
-title: "Introduction_dynUGENE"
+title: "Introduction to dynUGENE"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction_dynUGENE}
+  %\VignetteIndexEntry{Introduction to dynUGENE}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,6 +14,48 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Introduction
+
+## Details
+### dynGENIE3 Algorithm
+
+Suppose you have access to a time series dataset of the expression levels of $p$ genes in a gene regulatory network. The expression levels of each gene is measured at $N$ time points. Thus, the dataset can be organized as $$\mathcal{D} = \{\mathbf{x}(t_1), \cdots, \mathbf{x}(t_N)\}$$ where each $\mathbf{x}(t_k) \in \mathbb{R}, k=1, \cdots, N$ is a column vector storing the expression levels of all $p$ genes at some time step $t_k$. dynGENIE3 fits a random forest $f_j$ for each gene $x_j$ according to the following model of gene expression: $$\frac{dx_j(t)}{dt} = -\alpha_j x_j(t) + f_j(\mathbf{x}(t)),\; \forall\; j$$. where $\alpha_j$ is the degradation rate of gene $x_j$. This parameter can be preset by the user, or can be fitted from the data given the maximum and minumum of the expression levels and assuming exponential decay between these two points. In practice, the dataset is made of discrete time steps. To accomodate this, the learning sample for training the random forest for gene $x_j$ becomes instead $$\Bigg\{ \mathbf{x}(t_k), \; \frac{x_j(t_{k+1}) - x_j(t_k)}{t_{k+1} - t_k} + \alpha_j x_j (t_k) \Bigg\}_{k=1,\;\cdots,\;N-1}$$ Intuitively, we ask the random forest to predict the change in concentration of some gene $x_j$ and its degradation, given the current concentrations of all gene levels. Ranking the connectivity of the gene regulatory network is posed as $p$ different feature selection problems, where the importance of a directed edge from gene $x_j$ to $x_i$ is determined by the importance of gene $x_j$ as a feature for the random forest $f_j$. dynGENIE3 uses the Mean Decrease Impurity measure, which is a measure of how much the subtrees have a reduced variance due to a split by feature $x_j$: $$I(n) = |S|\cdot\text{Var}(S) - |S_T|\cdot\text{Var}(S_T) - |S_F|\cdot\text{Var}(S_F)$$. where $S$ is the set of samples that reach node $n$, $S_T$ is the subset of elements that are true according to the split, and $S_F$ is the subset of elements that are false. If a feature is used as a split at multiple nodes, its importance is the average of all individual importance scores.
+
+### Extensions to dynGENIE3
+
+
+
+## Loading Data
+### Repressilator
+### Hodgkin-Huxley
+### Threshold networks
+### Loading your own data
+
+## Case Study: Repressilator
+We will see how to use the `tuneThreshold()` function and analyze its output. 
+
+Pareto front
+
+## Case Study: Hodgkin-Huxley
+
+## Case Study: Perturbing Threshold Networks
+We will use the `perturb()` function and observe its effects on the dynamics of inferred threshold networks. 
+
+Use lots of images here:
+<!-- Insert image:
+<div style="text-align:center"><img src="PairsPlot2Components.png" alt="PairsPlot2Components" width="800"/>
+ -->
+
 ```{r setup}
 library(dynUGENE)
+```
+
+
+## References
+
+
+----
+
+```{r}
+sessionInfo()
 ```
