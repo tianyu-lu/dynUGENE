@@ -10,9 +10,6 @@
 #' measured at the corresponding time stamps.
 #' If multiple time series are included, they must be concatenated as new rows.
 #' The starting time stamp and the ending time stamp must differ by at least 1 unit.
-#' @param stochastic An optional logical argument specifying whether the outputs
-#' of random forests are treated as deterministic (FALSE) or as a distribution
-#' from which a sample is drawn (TRUE). Defaults to FALSE.
 #' @param threshold A value of class "numeric" which specifies a cutoff for
 #' the importance scores of edges below such edges are removed from the inferred
 #' graph. Defaults to NULL, which means no cutoff and all edges with a nonzero
@@ -51,8 +48,7 @@
 #'
 #' \dontrun{
 #' # Infer network from provided repressilator data
-#'
-#'
+#' ugene <- inferNetwork(Repressilator, showPlot=TRUE)
 #'}
 #' @references
 #'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
@@ -68,17 +64,19 @@
 #' @import ggplot2
 inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
                          ntree=1000L, mtry=NULL, alpha="from.data",
-                         seed=777,showPlot=FALSE, showScores=TRUE) {
+                         seed=777, showPlot=FALSE, showScores=TRUE) {
 
   # Performing checks of user input
   if (sum(is.na(data)) != 0){
-    print("Warning: input data contains NA or NaN values. Rows containing such
-          values will be omitted in training the randomForest.")
+    stop("Input data contains NA or NaN values. Remove them before analysis.")
     # stop("Input data cannot contain NA or NaN values. Please either remove the
     #      rows containing these values or set them to an appropriate value.")
   }
-  if (class(stochastic) != "logical") {
-    stop("Stochastic must be of class logical.")
+  if (length(dim(data)) != 2){
+    stop("Input data must be a two dimensional data.frame.")
+  }
+  if (class(data) != 'data.frame') {
+    stop("Input data must be a data.frame.")
   }
   if (is.null(threshold) == FALSE & class(threshold) != "numeric") {
     stop("Threshold must be of class numeric.")
@@ -116,6 +114,12 @@ inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
              positive.")
       }
     }
+  }
+  if (class(showPlot) != 'logical') {
+    stop("showPlot must be a logical value.")
+  }
+  if (class(showScores) != 'logical') {
+    stop("showScores must be a logical value.")
   }
 
   set.seed(seed)
