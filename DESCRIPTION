@@ -13,7 +13,7 @@ RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
 Imports:
-    mclust, stats, randomForest
+    mclust, stats, randomForest, reshape2, ggplot2
 Suggests: 
     testthat,
     knitr,

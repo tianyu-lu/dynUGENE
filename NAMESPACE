@@ -2,6 +2,8 @@
 
 export(InfCriteriaCalculation)
 export(inferNetwork)
+import(ggplot2)
 import(mclust)
 import(randomForest)
+import(reshape2)
 import(stats)

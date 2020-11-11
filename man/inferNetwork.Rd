@@ -11,14 +11,16 @@ inferNetwork(
   ntree = 1000L,
   mtry = NULL,
   alpha = "from.data",
-  seed = 777
+  seed = 777,
+  showPlot = FALSE,
+  showScores = TRUE
 )
 }
 \arguments{
 \item{data}{A data.frame of gene expression values. Row names are optional.
 First column is the time stamps. Time stamps do not need to be regularly spaced.
 Subsequent columns are the gene concentrations
-measured at the corresponding time stamps. Cannot contain NaN or NA values.
+measured at the corresponding time stamps.
 If multiple time series are included, they must be concatenated as new rows.
 The starting time stamp and the ending time stamp must differ by at least 1 unit.}
 
@@ -49,6 +51,11 @@ When alpha is a single number, all the genes are assumed to have the same
 degradation rate alpha.}
 
 \item{seed}{Random seed for reproducibility. Defaults to 777.}
+
+\item{showPlot}{Plots the weights matrix as a heatmap. Defaults to FALSE.}
+
+\item{showScores}{Show the importance scores when showPlot is set to TRUE.
+Defaults to TRUE.}
 }
 \value{
 Returns an object of class "ugene" with the following items:

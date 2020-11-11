@@ -24,7 +24,7 @@ estimateDecayRates <- function(data) {
 
   time.steps <- dim(data)[1]
   num.genes <- dim(data)[2] - 1
-  gene.names <- colnames(data)[2:num.genes + 1]
+  gene.names <- colnames(data)[2:(num.genes+1)]
   gene.data <- data[gene.names]
   time.data <- data[ , 1]
 
@@ -54,7 +54,9 @@ estimateDecayRates <- function(data) {
     alphas[target.gene.name] = (xmax - xmin) / abs(tmin - tmax)
   }
 
-  # alphas <- apply(alphas,2,max)
-
   return(alphas)
 }
+
+#[END]
+# data <- read.csv("data/Repressilator.csv")
+
