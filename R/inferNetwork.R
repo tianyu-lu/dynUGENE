@@ -10,17 +10,18 @@
 #' measured at the corresponding time stamps.
 #' If multiple time series are included, they must be concatenated as new rows.
 #' The starting time stamp and the ending time stamp must differ by at least 1 unit.
-#' @param threshold A value of class "numeric" which specifies a cutoff for
-#' the importance scores of edges below such edges are removed from the inferred
-#' graph. Defaults to NULL, which means no cutoff and all edges with a nonzero
-#' (> 1e-3 due to rounding errors) importance score are returned.
+#' @param mask A matrix which only includes the values 1 or NA. Must be of size
+#' numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
+#' the value of \eqn{j}. Otherwise, the connection is snipped and such a
+#' dependency is not allowed when training the random forests.
 #' @param ntree A positive integer indicating the number of trees in each
 #' random forest. Equivalent to the ntree argument in the randomForest package.
 #' Defaults to 1000.
 #' @param mtry A positive integer indicating the number of randomly sampled
 #' candidates to use at each split of each random forest. Equivalent to the mtry
 #' argument in the randomForest package. Defaults to p/3, where p is the number
-#' of genes.
+#' of genes. This option is disabled when a mask is provided and the default
+#' value is used.
 #' @param alpha Identical to the alpha argument in dynGENIE3:
 #' Can be "from.data" (default), or a vector containing the gene
 #' degradation rates, or a single number. When alpha is "from.data", the
@@ -62,7 +63,7 @@
 #' @import randomForest
 #' @import reshape2
 #' @import ggplot2
-inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
+inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
                          ntree=1000L, mtry=NULL, alpha="from.data",
                          seed=777, showPlot=FALSE, showScores=TRUE) {
 
@@ -78,15 +79,24 @@ inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
   if (class(data) != 'data.frame') {
     stop("Input data must be a data.frame.")
   }
-  if (is.null(threshold) == FALSE & class(threshold) != "numeric") {
-    stop("Threshold must be of class numeric.")
+
+  tsteps <- dim(data)[1]
+  ngenes <- dim(data)[2]
+
+  if (! is.null(mask)) {
+    if (length(dim(mask)) != 2) {
+      stop("Mask must be a two-dimensional matrix.")
+    }
+    if (dim(mask)[1] != ngenes-1 || dim(mask)[2] != ngenes-1) {
+      stop("Mask must have the same dimensions as the number of nodes.")
+    }
   }
   if (typeof(ntree) != "integer"){
     stop("ntree must be of type integer. Write 1000L instead of 1000.")
   }
-
-  tsteps <- dim(data)[1]
-  ngenes <- dim(data)[2]
+  if (is.null(mtry) == FALSE && typeof(mtry) != "integer"){
+    stop("mtry must be of type integer. Write 3L instead of 3")
+  }
 
   # alpha checking adapted from dynGENIE3:
   if (!is.numeric(alpha) && alpha != "from.data") {
@@ -153,24 +163,50 @@ inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
 
   ugene.rf.list <- vector(mode="list", length=ngenes)
 
-  for (gene.idx in c(1:ngenes)){
-    print(gene.idx)
-    ugene.rf.list[[gene.idx]] <- randomForest(data[ , ], d.data.dt[ ,gene.idx], mtry=3, ntree=10,
-                                              importance=TRUE, na.action=na.omit)
+  if (is.null(mtry)) {
+    mtry <- as.integer( (ngenes-1) / 3 )
+  }
+
+  if (is.null(mask)) {
+    for (gene.idx in c(1:ngenes)){
+      cat(sprintf("Training node %s\n", gene.idx))
+      ugene.rf.list[[gene.idx]] <-
+        randomForest::randomForest(data[ , ], d.data.dt[ ,gene.idx],
+                                   mtry=mtry, ntree=10,
+                                   importance=TRUE, na.action=na.omit)
+    }
+  } else {
+    # for each column j, keep the dependencies on nodes i if mask(i, j) is 1
+    for (gene.idx in c(1:ngenes)){
+      edges <- which(mask[ ,gene.idx] == 1)
+      cat(sprintf("Edges to predict node %s: %s\n", gene.idx, edges))
+      ugene.rf.list[[gene.idx]] <-
+        randomForest::randomForest(data.frame(data[ , edges]), d.data.dt[ ,gene.idx],
+                                   ntree=10,
+                                   importance=TRUE, na.action=na.omit)
+    }
   }
 
   weight.matrix <- matrix(0.0, nrow=ngenes, ncol=ngenes)
   rownames(weight.matrix) <- gene.names
   colnames(weight.matrix) <- gene.names
 
-  for (gene.idx in c(1:ngenes)){
-    imp <- importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
-    weight.matrix[, gene.idx] <- imp / sum(imp)  # Normalize importance scores
+  if (is.null(mask)) {
+    for (gene.idx in c(1:ngenes)){
+      imp <- importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
+      weight.matrix[, gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    }
+  } else {
+    for (gene.idx in c(1:ngenes)){
+      imp <- importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
+      edges <- which(mask[ ,gene.idx] == 1)
+      weight.matrix[edges , gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    }
   }
   weight.matrix <- (weight.matrix - min(weight.matrix)) /
     (max(weight.matrix) - min(weight.matrix))
   weight.matrix <- round(weight.matrix, digits = 2)
-
+  # print(weight.matrix)
   if (showPlot){
     melted_weights <- reshape2::melt(weight.matrix)
     names(melted_weights) <- c("From", "To", "value")

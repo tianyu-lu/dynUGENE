@@ -20,7 +20,7 @@
 #' @examples
 #' \dontrun{
 #'   x0 <- Repressilator[1, 2:7]
-#'   ugene <- inferNetwork(Repressilator)
+#'   ugene <- inferNetwork(Repressilator, mtry=3L)
 #'   simulate(ugene, x0)
 #' }
 #'

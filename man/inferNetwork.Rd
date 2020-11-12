@@ -7,7 +7,7 @@
 inferNetwork(
   data,
   stochastic = FALSE,
-  threshold = NULL,
+  mask = NULL,
   ntree = 1000L,
   mtry = NULL,
   alpha = "from.data",
@@ -24,10 +24,10 @@ measured at the corresponding time stamps.
 If multiple time series are included, they must be concatenated as new rows.
 The starting time stamp and the ending time stamp must differ by at least 1 unit.}
 
-\item{threshold}{A value of class "numeric" which specifies a cutoff for
-the importance scores of edges below such edges are removed from the inferred
-graph. Defaults to NULL, which means no cutoff and all edges with a nonzero
-(> 1e-3 due to rounding errors) importance score are returned.}
+\item{mask}{A matrix which only includes the values 1 or NA. Must be of size
+numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
+the value of \eqn{j}. Otherwise, the connection is snipped and such a
+dependency is not allowed when training the random forests.}
 
 \item{ntree}{A positive integer indicating the number of trees in each
 random forest. Equivalent to the ntree argument in the randomForest package.
