@@ -18,7 +18,7 @@
 plotTrajectory <- function(simulation, node.names) {
   cols <- c('#1B9E77', '#D95F02', '#7570B3',
             '#E7298A', '#66A61E', '#E6AB02')
-  gene.names <- colnames(traj.x)
+  gene.names <- colnames(simulation$x)
 
   if (! all(node.names %in% gene.names)) {
     stop("One or more node names do not exist as a gene name.")
@@ -30,11 +30,11 @@ plotTrajectory <- function(simulation, node.names) {
     stop("Currently does not support plotting more than 6 nodes simultaneously.")
   }
 
-  plot(traj.t, traj.x[node.names[1]], type = 'l', xlab = "Time",
+  plot(simulation$t, simulation$x[[node.names[1]]], type = 'l', xlab = "Time",
        ylab = "Expression/\nConcentration", col=cols[1])
   if (length(node.names) > 1) {
     for (i in 2:length(node.names)) {
-      points(traj.t, traj.x[node.names[i]], type = 'l',
+      points(simulation$t, simulation$x[[node.names[i]]], type = 'l',
              xlab = "Time", col=cols[i])
     }
   }

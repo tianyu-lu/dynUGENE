@@ -177,18 +177,18 @@ inferNetwork <- function(data, stochastic=FALSE, threshold=NULL,
 
     # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
 
-    is_heatmap <- ggplot2::ggplot(data = melted_weights, aes(x=To, y=From, fill=value)) +
+    is_heatmap <- ggplot2::ggplot(data = melted_weights,
+                                  ggplot2::aes(x=To, y=From, fill=value)) +
       ggplot2::geom_tile(color = "white")+
       ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                            midpoint = 0.5, limit = c(0,1), space = "Lab",
                            name="Importance\nScore") +
       ggplot2::theme_minimal()
     if (showScores){
-      is_heatmap +
-        ggplot2::geom_text(aes(To, From, label = value), color = "black", size = 4)
-    } else {
-      is_heatmap
+      is_heatmap <- is_heatmap +
+        ggplot2::geom_text(ggplot2::aes(To, From, label = value), color = "black", size = 4)
     }
+    print(is_heatmap)
   }
 
 

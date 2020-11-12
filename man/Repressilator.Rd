@@ -7,6 +7,7 @@
 \format{
 Concentrations are evaluated every 0.1 timesteps for 500 timesteps:
 \describe{
+\item{t}{Time stamps}
 \item{m1}{Concentration of mRNA 1}
 \item{p1}{Concentration of protein 1}
 \item{m2}{Concentration of mRNA 2}

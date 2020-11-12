@@ -23,7 +23,7 @@ of random forests are treated as deterministic (FALSE) or as a distribution
 from which a sample is drawn (TRUE). Defaults to FALSE.}
 }
 \value{
-Returns an object of class "trajectory" containing the time stamps
+Returns an object of class "simulation" containing the time stamps
 in result.t and simulated values of all genes in result.x
 }
 \description{
@@ -32,7 +32,7 @@ network given the learned random forests for each node.
 }
 \examples{
 \dontrun{
-  x0 <- Repressilator[1, 1:6]
+  x0 <- Repressilator[1, 2:7]
   ugene <- inferNetwork(Repressilator)
   simulate(ugene, x0)
 }
