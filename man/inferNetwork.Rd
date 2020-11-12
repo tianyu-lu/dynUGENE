@@ -24,10 +24,6 @@ measured at the corresponding time stamps.
 If multiple time series are included, they must be concatenated as new rows.
 The starting time stamp and the ending time stamp must differ by at least 1 unit.}
 
-\item{stochastic}{An optional logical argument specifying whether the outputs
-of random forests are treated as deterministic (FALSE) or as a distribution
-from which a sample is drawn (TRUE). Defaults to FALSE.}
-
 \item{threshold}{A value of class "numeric" which specifies a cutoff for
 the importance scores of edges below such edges are removed from the inferred
 graph. Defaults to NULL, which means no cutoff and all edges with a nonzero
@@ -78,8 +74,7 @@ forests used to infer the network.
 
 \dontrun{
 # Infer network from provided repressilator data
-
-
+ugene <- inferNetwork(Repressilator, showPlot=TRUE)
 }
 }
 \references{

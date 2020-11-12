@@ -2,6 +2,7 @@
 
 export(InfCriteriaCalculation)
 export(inferNetwork)
+export(simulate)
 import(ggplot2)
 import(mclust)
 import(randomForest)
