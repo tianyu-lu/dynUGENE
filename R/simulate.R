@@ -19,9 +19,15 @@
 #'
 #' @examples
 #' \dontrun{
+#'   # deterministic
 #'   x0 <- Repressilator[1, 2:7]
 #'   ugene <- inferNetwork(Repressilator, mtry=3L)
-#'   simulate(ugene, x0)
+#'   trajectory <- simulate(ugene, x0)
+#'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
+#'
+#'   # stochastic
+#'   trajectory <- simulate(ugene, x0, stochastic=TRUE)
+#'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 #' }
 #'
 #' @export
@@ -54,7 +60,15 @@ simulate <- function(ugene, x0, tend=100, dt=0.1, stochastic=FALSE) {
     curr.xt <- data.frame(matrix(nrow=1, ncol=ngenes))
     for (i in 1:ngenes) {
       thisrf <- ugene$model[[i]]
-      y <- predict(thisrf, xt0)  # y = (xt1 - xt0)/(t1 - t0) + alpha*xt0
+
+      if (stochastic) {
+        y.trees <- predict(thisrf, xt0, predict.all = TRUE)
+        y.mean <- y.trees$aggregate
+        y.std <- sqrt(var(as.vector(y.trees$individual)))
+        y <- rnorm(1, mean=y.mean, sd=y.std)
+      } else {
+        y <- predict(thisrf, xt0)  # y = (xt1 - xt0)/(t1 - t0) + alpha*xt0
+      }
 
       curr.xt[i] <- (y - ugene$alpha[i]*as.numeric(xt0[i]))*dt + as.numeric(xt0[i])
     }
