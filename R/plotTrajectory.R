@@ -14,6 +14,8 @@
 #'   trajectory <- simulate(ugene, x0)
 #'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 #' }
+#'
+#' @export
 
 plotTrajectory <- function(simulation, node.names) {
   cols <- c('#1B9E77', '#D95F02', '#7570B3',

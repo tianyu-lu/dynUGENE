@@ -41,7 +41,7 @@
 #'     method.
 #' }
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #'    ugene <- inferNetwork(Repressilator, mtry=3L)
 #'    result <- tuneThreshold(Repressilator, ugene)

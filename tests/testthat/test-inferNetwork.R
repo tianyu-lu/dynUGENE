@@ -1,11 +1,11 @@
-data <- read.csv("data/Repressilator.csv")
+data <- Repressilator
 data$m1 <- NA
 
 test_that("test errors", {
   expect_error( inferNetwork(data) )
 })
 
-data <- read.csv("data/Repressilator.csv")
+data <- Repressilator
 ret <- inferNetwork(data)
 test_that("return values", {
   expect_equal( class(ret), 'ugene' )

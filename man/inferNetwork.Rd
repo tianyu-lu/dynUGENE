@@ -6,9 +6,9 @@
 \usage{
 inferNetwork(
   data,
-  stochastic = FALSE,
+  multiple.exp = FALSE,
   mask = NULL,
-  ntree = 1000L,
+  ntree = 10L,
   mtry = NULL,
   alpha = "from.data",
   seed = 777,
@@ -21,8 +21,12 @@ inferNetwork(
 First column is the time stamps. Time stamps do not need to be regularly spaced.
 Subsequent columns are the gene concentrations
 measured at the corresponding time stamps.
-If multiple time series are included, they must be concatenated as new rows.
-The starting time stamp and the ending time stamp must differ by at least 1 unit.}
+If multiple time series are included, they must be concatenated as new rows,
+where the first time stamp for the new experiment is less than the last
+time stamp of the previous experiment.}
+
+\item{multiple.exp}{Optional. Defaults to FALSE. When TRUE, data will be
+taken to have multiple experiments.}
 
 \item{mask}{A matrix which only includes the values 1 or NA. Must be of size
 numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
@@ -31,12 +35,13 @@ dependency is not allowed when training the random forests.}
 
 \item{ntree}{A positive integer indicating the number of trees in each
 random forest. Equivalent to the ntree argument in the randomForest package.
-Defaults to 1000.}
+Defaults to 10L.}
 
 \item{mtry}{A positive integer indicating the number of randomly sampled
 candidates to use at each split of each random forest. Equivalent to the mtry
 argument in the randomForest package. Defaults to p/3, where p is the number
-of genes.}
+of genes. This option is disabled when a mask is provided and the default
+value is used.}
 
 \item{alpha}{Identical to the alpha argument in dynGENIE3:
 Can be "from.data" (default), or a vector containing the gene
@@ -75,6 +80,9 @@ forests used to infer the network.
 \dontrun{
 # Infer network from provided repressilator data
 ugene <- inferNetwork(Repressilator, showPlot=TRUE)
+
+# Stochastic repressilator data
+ugene <- inferNetwork(StochasticRepressilator, multiple.exp=TRUE)
 }
 }
 \references{

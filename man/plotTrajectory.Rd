@@ -20,7 +20,8 @@ dynamics of the specified nodes over time. Specify nodes by their names.
 \dontrun{
   x0 <- Repressilator[1, 2:7]
   ugene <- inferNetwork(Repressilator)
-  simulation <- simulate(ugene, x0)
-  plotTrajectory(simulation, c("p3", "p2", "p1"))
+  trajectory <- simulate(ugene, x0)
+  plotTrajectory(trajectory, c("p3", "p2", "p1"))
 }
+
 }

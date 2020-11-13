@@ -34,8 +34,33 @@ squared residual error of the fitted random forests for all nodes, versus the
 number of connections in the network. The ideal network complexity should be
 the smallest number of connections at which the error drops steeply.}
 }
+\value{
+An object of class "ugene.analysis" that contains the following:
+\itemize{
+    \item step.errors - a vector of numerics, the average mean squared error
+    of the random forests used for prediction, in the order of sparsest to
+    more complex networks.
+    \item col.errors - a vector of numerics, same as step.errors but constructed
+    with the masks described above as column-wise.
+    \item step.masks - a list of matrices, the masks constructed by the
+    step-wise method.
+    \item col.masks - a list of matrices, the masks constructed by the column-wise
+    method.
+}
+}
 \description{
 Performs a search over possible cutoff thresholds \eqn{\epsilon}. All edges
 with an importance score below \eqn{\epsilon} are removed and the random
 forests are retrained without those connections.
+}
+\examples{
+\dontrun{
+   ugene <- inferNetwork(Repressilator, mtry=3L)
+   result <- tuneThreshold(Repressilator, ugene)
+   # take a look at network corresponding to the third and seventh
+   # step-wise mask (both has drops in mse)
+   inferNetwork(Repressilator, mask=result$step.masks[[3]], showPlot=TRUE)
+   inferNetwork(Repressilator, mask=result$step.masks[[7]], showPlot=TRUE)
+}
+
 }

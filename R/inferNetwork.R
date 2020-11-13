@@ -8,15 +8,18 @@
 #' First column is the time stamps. Time stamps do not need to be regularly spaced.
 #' Subsequent columns are the gene concentrations
 #' measured at the corresponding time stamps.
-#' If multiple time series are included, they must be concatenated as new rows.
-#' The starting time stamp and the ending time stamp must differ by at least 1 unit.
+#' If multiple time series are included, they must be concatenated as new rows,
+#' where the first time stamp for the new experiment is less than the last
+#' time stamp of the previous experiment.
+#' @param multiple.exp Optional. Defaults to FALSE. When TRUE, data will be
+#' taken to have multiple experiments.
 #' @param mask A matrix which only includes the values 1 or NA. Must be of size
 #' numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
 #' the value of \eqn{j}. Otherwise, the connection is snipped and such a
 #' dependency is not allowed when training the random forests.
 #' @param ntree A positive integer indicating the number of trees in each
 #' random forest. Equivalent to the ntree argument in the randomForest package.
-#' Defaults to 1000.
+#' Defaults to 10L.
 #' @param mtry A positive integer indicating the number of randomly sampled
 #' candidates to use at each split of each random forest. Equivalent to the mtry
 #' argument in the randomForest package. Defaults to p/3, where p is the number
@@ -50,6 +53,9 @@
 #' \dontrun{
 #' # Infer network from provided repressilator data
 #' ugene <- inferNetwork(Repressilator, showPlot=TRUE)
+#'
+#' # Stochastic repressilator data
+#' ugene <- inferNetwork(StochasticRepressilator, multiple.exp=TRUE)
 #'}
 #' @references
 #'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
@@ -60,11 +66,12 @@
 #' randomForest. R News 2(3), 18--22.
 #'
 #' @export
-#' @import randomForest
+#' @importFrom randomForest randomForest importance
 #' @import reshape2
 #' @import ggplot2
-inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
-                         ntree=1000L, mtry=NULL, alpha="from.data",
+# @importMethodsFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 theme_minimal geom_text
+inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
+                         ntree=10L, mtry=NULL, alpha="from.data",
                          seed=777, showPlot=FALSE, showScores=TRUE) {
 
   # Performing checks of user input
@@ -79,8 +86,13 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
   if (class(data) != 'data.frame') {
     stop("Input data must be a data.frame.")
   }
+  if (tolower(colnames(data)[1]) != 't') {
+    stop("Name of first column of data must be 't' for time.")
+  }
+  if (class(multiple.exp) != "logical") {
+    stop("multiple.exp must be of class logical.")
+  }
 
-  tsteps <- dim(data)[1]
   ngenes <- dim(data)[2]
 
   if (! is.null(mask)) {
@@ -153,7 +165,20 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
     alphas <- alpha[gene.names]
   }
 
-  d.data <- data[2:tsteps, ] - data[1:tsteps-1, ]
+  if (multiple.exp) {
+    # get the boundaries between experiments (dt > 1)
+    dt <- data[2:tsteps, 1] - data[1:tsteps-1, 1]
+    bounds <- which(dt < 0)
+    if (sum(bounds) == 0){
+      stop("multiple.exp is TRUE but no consecutive experiments found in data.")
+    }
+    d.data <- data[2:tsteps, ] - data[1:tsteps-1, ]
+    d.data <- d.data[-bounds, ]
+    tsteps <- dim(d.data)[1] + 1
+  } else {
+    d.data <- data[2:tsteps, ] - data[1:tsteps-1, ]
+  }
+
   d.data.dt <- d.data[ ,2:ngenes] / d.data[ ,1]
   alphas_mat <- matrix(rep(alphas,each=tsteps-1),nrow=tsteps-1)
   decays <- alphas_mat * data[1:tsteps-1, 2:ngenes]
@@ -164,7 +189,7 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
   ugene.rf.list <- vector(mode="list", length=ngenes)
 
   if (is.null(mtry)) {
-    mtry <- as.integer( (ngenes-1) / 3 )
+    mtry <- as.integer( ngenes / 3 )
   }
 
   if (is.null(mask)) {
@@ -172,7 +197,7 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
       cat(sprintf("Training node %s\n", gene.idx))
       ugene.rf.list[[gene.idx]] <-
         randomForest::randomForest(data[ , ], d.data.dt[ ,gene.idx],
-                                   mtry=mtry, ntree=10,
+                                   mtry=mtry, ntree=ntree,
                                    importance=TRUE, na.action=na.omit)
     }
   } else {
@@ -182,7 +207,7 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
       cat(sprintf("Edges to predict node %s: %s\n", gene.idx, edges))
       ugene.rf.list[[gene.idx]] <-
         randomForest::randomForest(data.frame(data[ , edges]), d.data.dt[ ,gene.idx],
-                                   ntree=10,
+                                   ntree=ntree,
                                    importance=TRUE, na.action=na.omit)
     }
   }
@@ -193,12 +218,12 @@ inferNetwork <- function(data, stochastic=FALSE, mask=NULL,
 
   if (is.null(mask)) {
     for (gene.idx in c(1:ngenes)){
-      imp <- importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
+      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
       weight.matrix[, gene.idx] <- imp / sum(imp)  # Normalize importance scores
     }
   } else {
     for (gene.idx in c(1:ngenes)){
-      imp <- importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
+      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
       edges <- which(mask[ ,gene.idx] == 1)
       weight.matrix[edges , gene.idx] <- imp / sum(imp)  # Normalize importance scores
     }
