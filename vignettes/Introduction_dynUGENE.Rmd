@@ -98,7 +98,13 @@ Hodgkin and Huxley (1952) published a mathematical model of the action potential
 
 $g_{\text{K}}(t) = \bar{g}_{\text{K}}(n(t))^4$ is the potassium conductance and $g_{\text{Na}}(t) = \bar{g}_{\text{Na}}(m(t))^3h(t)$ is the sodium conductance, where $\bar{g}_{\text{K}}$ and $\bar{g}_{\text{Na}}$ are the maximal conductances for potassium and sodium respectively.
 
-We also provide Hodgkin-Huxley data with noise.
+As the external applied current $I_{\text{applied}}$ determines the frequency of the voltage spikes, we include in the `HodgkinHuxley` dataset timeseries data of all four components of the system measured at $I_{\text{applied}} \in \{ 10, 30, 50, 100\}$. Thus, the dataset has 13 columns, one for time, and four per each $I_{\text{applied}}$ Note this system has four components, but only the voltage variable is shown in the plots.
+
+<div style="text-align:center"><img src="hh-allcurrents.png" alt="rep" width="400"/><div style="text-align:left">
+
+We also provide Hodgkin-Huxley data with noise, some examples are shown below. $I_{\text{applied}} = 10$ in all cases.
+
+<div style="text-align:center"><img src="hh-3stochastic.png" alt="rep" width="400"/><div style="text-align:left">
 
 ### Loading your own data
 

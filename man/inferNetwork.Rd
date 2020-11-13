@@ -71,9 +71,10 @@ Returns an object of class "ugene" with the following items:
 }
 }
 \description{
-Given a dataframe of p genes with expression levels measured at k time
-steps, returns the adjacency matrix of the inferred network and the random
-forests used to infer the network.
+Given a dataframe of \eqn{p} genes as columns and measurements at different timestamps
+as rows, returns the adjacency matrix of the inferred network, the estimated
+decay rates of each species, and the dynamics of the network learned by \eqn{p}
+random forests.
 }
 \examples{
 
