@@ -16,12 +16,16 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-dynUGENE (dynamical Uncertainty-aware GEne Network Inference with Ensembles of trees) is an extension of dynGENIE3. Given time series data a set of species (mRNA/protein/ion concentrations), dynUGENE provides tools for the visualization, analysis, and simulation of the results of the dynGENIE3 method. 
+dynUGENE (dynamical Uncertainty-aware GEne Network Inference with Ensembles of trees) is an extension of dynGENIE3. Given time series or steady state data a set of species (mRNA/protein/ion concentrations), dynUGENE provides tools for the visualization, analysis, and simulation of the results of the dynGENIE3 method. 
 
 ## Details
 ### dynGENIE3 Algorithm
 
 Suppose you have access to a time series dataset of the expression levels of $p$ genes in a gene regulatory network. The expression levels of each gene is measured at $N$ time points. Thus, the dataset can be organized as $$\mathcal{D} = \{\mathbf{x}(t_1), \cdots, \mathbf{x}(t_N)\}$$ where each $\mathbf{x}(t_k) \in \mathbb{R}, k=1, \cdots, N$ is a column vector storing the expression levels of all $p$ genes at some time step $t_k$. dynGENIE3 fits a random forest $f_j$ for each gene $x_j$ according to the following model of gene expression: $$\frac{dx_j(t)}{dt} = -\alpha_j x_j(t) + f_j(\mathbf{x}(t)),\; \forall\; j$$ where $\alpha_j$ is the degradation rate of gene $x_j$. This parameter can be preset by the user, or can be fitted from the data given the maximum and minumum of the expression levels and assuming exponential decay between these two points. In practice, the dataset is made of discrete time steps. To accomodate this, the learning sample for training the random forest for gene $x_j$ becomes instead $$\Bigg\{ \mathbf{x}(t_k), \; \frac{x_j(t_{k+1}) - x_j(t_k)}{t_{k+1} - t_k} + \alpha_j x_j (t_k) \Bigg\}_{k=1,\;\cdots,\;N-1}$$ Intuitively, we ask the random forest to predict the change in concentration of some gene $x_j$ and its degradation, given the current concentrations of all gene levels. Ranking the connectivity of the gene regulatory network is posed as $p$ different feature selection problems, where the importance of a directed edge from gene $x_j$ to $x_i$ is determined by the importance of gene $x_j$ as a feature for the random forest $f_j$. dynGENIE3 uses the Mean Decrease Impurity measure, which is a measure of how much the subtrees have a reduced variance due to a split by feature $x_j$: $$I(n) = |S|\cdot\text{Var}(S) - |S_T|\cdot\text{Var}(S_T) - |S_F|\cdot\text{Var}(S_F)$$ where $S$ is the set of samples that reach node $n$, $S_T$ is the subset of elements that are true according to the split, and $S_F$ is the subset of elements that are false. If a feature is used as a split at multiple nodes, its importance is the average of all individual importance scores.
+
+### dynGENIE3 for Steady-State Data
+
+At steady state, $\frac{dx_j(t)}{dt} = 0 \;\; \forall j$. Thus, the learning sample becomes $$\Big\{ \mathbf{x}(t_k), \; \alpha_j x_j (t_k) \Big\}_{k=1,\;\cdots,\;N-1}$$. All other parts of the dynGENIE3 algorithm remains the same. 
 
 ### Extensions to dynGENIE3
 
@@ -111,7 +115,7 @@ ugene <- inferNetwork(Repressilator, mtry=3L, showPlot=TRUE)
 ```
 <div style="text-align:center"><img src="rep-network.png" alt="rep" width="400"/><div style="text-align:left">
 
-The heatmap shows the directed edges of the learned network. The numbers on each grid is the normalized importance score as determined by the random forests. The scores are shown by default. For networks with nodes $>> 6$, it's advised to set `showScores=FALSE`. The rows with high sums of importance scores can be interpreted as master regulators. Rows that cluster together can be interpreted as regulators with similar function. 
+The heatmap shows the directed edges of the learned network. The numbers on each grid is the normalized importance score as determined by the random forests. The scores are shown by default. For networks with nodes $>> 6$, it's advised to set `showScores=FALSE`. 
 
 ### Simulation
 dynUGENE allows for the simulation of learned network with `simulateUGENE()`. Here `x0` is a data.frame of the initial concentrations of each node in the system. This can be changed according to your desired initial conditions.
@@ -209,21 +213,50 @@ plotTrajectory(trajectory, c("p3", "p2", "p1"))
 
 The flexibility of parameterizing functions using random forests is reflected in the model's ability to learn not only oscillatory behaviour, but also that oscillations occur with different amplitudes and occasionally out of phase, matching the qualitative behaviour of the input data.
 
+## Case Study 3: Steady-State Data
+
+We will fit a dynUGENE model for steady state gene expression data using `inferSSNetwork()`. The data comes from the Bioconductor package [`grndata`](https://bioconductor.org/packages/release/data/experiment/vignettes/grndata/inst/doc/grndata.html).  
+
+```r
+data <- grndata::syntren300.data
+ugene <- inferSSNetwork(data, showPlot=TRUE)
+```
+<div style="text-align:center"><img src="syntren-300.png" alt="rep" width="400"/><div style="text-align:left">
+
+The number of nodes for this network is 300. As `grndata` has other datasets upwards to thousands of nodes, visualization for the learned steady-state network includes clustering with the dendrograms not shown. There appears to be some clusters in the lower-left of the matrix, let's take a closer look.
+
+```r
+gplots::heatmap.2(ugene$network[270:300, 0:30],
+                   trace="none", col=myCols,
+                   ylab = "From", xlab = "To", labRow = FALSE, 
+                   labCol = FALSE, margins = c(2, 2))
+```
+<div style="text-align:center"><img src="syntren-zoom.png" alt="rep" width="400"/><div style="text-align:left">
+
+The rows with high sums of importance scores can be interpreted as master regulators. For example the gene for the last row is `ebgR`, which is a [transcriptional regulator](https://www.uniprot.org/uniprot/A0A086V7N0). Rows that cluster together can be interpreted as regulators with similar function. 
+
+```r
+rownames(ugene$network)[295:300]
+```
 
 ```{r setup}
 library(dynUGENE)
 ```
 
-
+<div style="text-align:left">
 ## References
 
-*[Elowitz, M. B., & Leibler, S. (2000). A synthetic oscillatory network of transcriptional regulators. Nature, 403(6767), 335-338.](https://www.nature.com/articles/35002125)
+* [Elowitz, M. B., & Leibler, S. (2000). A synthetic oscillatory network of transcriptional regulators. Nature, 403(6767), 335-338.](https://www.nature.com/articles/35002125)
 
-*[Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of gene networks from time series expression data. Scientific reports, 8(1), 1-12.](https://www.nature.com/articles/s41598-018-21715-0)
+* [Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of gene networks from time series expression data. Scientific reports, 8(1), 1-12.](https://www.nature.com/articles/s41598-018-21715-0)
 
-*[Hodgkin, A. L., & Huxley, A. F. (1952). A quantitative description of membrane current and its application to conduction and excitation in nerve. The Journal of physiology, 117(4), 500.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1392413/)
+* [Pau Bellot, Catharina Olsen and Patrick E Meyer (2020). grndata:
+  Synthetic Expression Data for Gene Regulatory Network Inference. R
+  package version 1.20.0.](https://bioconductor.org/packages/release/data/experiment/vignettes/grndata/inst/doc/grndata.html)
 
-*[Mangan, N. M., Brunton, S. L., Proctor, J. L., & Kutz, J. N. (2016). Inferring biological networks by sparse identification of nonlinear dynamics. IEEE Transactions on Molecular, Biological and Multi-Scale Communications, 2(1), 52-63.](https://ieeexplore.ieee.org/abstract/document/7809160)
+* [Hodgkin, A. L., & Huxley, A. F. (1952). A quantitative description of membrane current and its application to conduction and excitation in nerve. The Journal of physiology, 117(4), 500.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1392413/)
+
+* [Mangan, N. M., Brunton, S. L., Proctor, J. L., & Kutz, J. N. (2016). Inferring biological networks by sparse identification of nonlinear dynamics. IEEE Transactions on Molecular, Biological and Multi-Scale Communications, 2(1), 52-63.](https://ieeexplore.ieee.org/abstract/document/7809160)
 
 ----
 
