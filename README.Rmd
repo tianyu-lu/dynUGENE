@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-![](inst/extdata/logo.PNG){width=30%}
+![](inst/extdata/logo.PNG){width=20%}
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -27,11 +27,12 @@ dynUGENE is an R package for the inference, simulation, and visualization of gen
 dynUGENE build off dynGENIE3, an algorithm to infer gene network architecture and dynamics given time-series or steady-state expression data.
 
 dynUGENE provides several additional functionalities on top of dynGENIE3.
-    * Visualization of the inferred network as a heatmap.
-    * Simulation of the learned system given any initial condition.
-    * Stochastic simulations by accounting for uncertainty in the random forests' predictions
-    * Model selection using a Pareto front by comparing model error with model complexity.
-    * Additional datasets (repressilator, Hodgkin-Huxley) both deterministic and stochastic.
+
+  * Visualization of the inferred network as a heatmap.
+  * Simulation of the learned system given any initial condition.
+  * Stochastic simulations by accounting for uncertainty in the random forests' predictions
+  * Model selection using a Pareto front by comparing model error with model complexity.
+  * Additional datasets (repressilator, Hodgkin-Huxley) both deterministic and stochastic.
 
 
 ## Installation

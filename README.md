@@ -20,12 +20,16 @@ architecture and dynamics given time-series or steady-state expression
 data.
 
 dynUGENE provides several additional functionalities on top of
-dynGENIE3. \* Visualization of the inferred network as a heatmap. \*
-Simulation of the learned system given any initial condition. \*
-Stochastic simulations by accounting for uncertainty in the random
-forests’ predictions \* Model selection using a Pareto front by
-comparing model error with model complexity. \* Additional datasets
-(repressilator, Hodgkin-Huxley) both deterministic and stochastic.
+dynGENIE3.
+
+  - Visualization of the inferred network as a heatmap.
+  - Simulation of the learned system given any initial condition.
+  - Stochastic simulations by accounting for uncertainty in the random
+    forests’ predictions
+  - Model selection using a Pareto front by comparing model error with
+    model complexity.
+  - Additional datasets (repressilator, Hodgkin-Huxley) both
+    deterministic and stochastic.
 
 ## Installation
 
