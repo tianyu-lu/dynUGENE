@@ -43,10 +43,10 @@
 #'    ugene <- inferSSNetwork(data, showPlot=TRUE)
 #' }
 #'
-#' #' @references
-#'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
-#'gene networks from time series expression data. \emph{Scientific reports},
-#'8(1), 1-12.
+#' @references
+#' Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
+#' gene networks from time series expression data. \emph{Scientific reports},
+#' 8(1), 1-12.
 #'
 #' A. Liaw and M. Wiener (2002). Classification and Regression by
 #' randomForest. R News 2(3), 18--22.
@@ -56,7 +56,6 @@
 #' @importFrom randomForest randomForest importance
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom gplots heatmap.2
-#'
 
 inferSSNetwork <- function(data, mask=NULL,
                            ntree=10L, mtry=NULL, alpha=NULL,
