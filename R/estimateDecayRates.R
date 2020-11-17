@@ -2,14 +2,15 @@
 #'
 #' Code adapted from dynGENIE3.
 #' For each gene, the decay rate is estimated by assuming that the gene expression
-#' x(t) follows: x(t) =  A exp(-alpha * t) + C_min,
+#' x(t) follows: x(t) =  A exp(-alpha * t) + cMin,
 #' between the highest and lowest expression values.
-#' C_min is set to the minimum expression value over all genes and all samples.
+#' cMin is set to the minimum expression value over all genes and all samples.
 #'
 #' @param data The data.frame provided as input to inferNetwork().
 #'
 #' @return Returns a vector of estimated decay rates for each gene.
 #'
+#' @export
 #' @references
 #'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
 #'gene networks from time series expression data. \emph{Scientific reports},
@@ -17,40 +18,40 @@
 
 estimateDecayRates <- function(data) {
 
-  time.steps <- dim(data)[1]
-  num.genes <- dim(data)[2] - 1
-  gene.names <- colnames(data)[2:(num.genes+1)]
-  gene.data <- data[gene.names]
-  time.data <- data[ , 1]
+  timeSteps <- dim(data)[1]
+  numGenes <- dim(data)[2] - 1
+  geneNames <- colnames(data)[2 : (numGenes + 1)]
+  geneData <- data[geneNames]
+  timeData <- data[ , 1]
 
-  C_min <- min(gene.data)
+  cMin <- min(geneData)
 
-  alphas <- vector(mode = "numeric", length=num.genes)
-  names(alphas) <- gene.names
+  alphas <- vector(mode = "numeric", length = numGenes)
+  names(alphas) <- geneNames
 
-  for (target.gene.idx in seq(from=1, to=num.genes)) {
-    target.gene.name <- gene.names[target.gene.idx]
+  for (targetGeneIdx in seq(from = 1, to = numGenes)) {
+    targetGeneName <- geneNames[targetGeneIdx]
 
-    idx.min <- which.min(gene.data[,target.gene.name])
-    idx.max <- which.max(gene.data[,target.gene.name])
+    idxMin <- which.min(geneData[ , targetGeneName])
+    idxMax <- which.max(geneData[ , targetGeneName])
 
-    xmin <- gene.data[idx.min,target.gene.name]
-    xmax <- gene.data[idx.max,target.gene.name]
+    xmin <- geneData[idxMin, targetGeneName]
+    xmax <- geneData[idxMax, targetGeneName]
 
-    tmin <- time.data[idx.min]
-    tmax <- time.data[idx.max]
+    tmin <- timeData[idxMin]
+    tmax <- timeData[idxMax]
 
-    xmin <- max(xmin-C_min,1e-6)
-    xmax <- max(xmax-C_min,1e-6)
+    xmin <- max(xmin - cMin, 1e-6)
+    xmax <- max(xmax - cMin, 1e-6)
 
     xmin <- log(xmin)
     xmax <- log(xmax)
 
-    alphas[target.gene.name] = (xmax - xmin) / abs(tmin - tmax)
+    alphas[targetGeneName] = (xmax - xmin) / abs(tmin - tmax)
   }
 
   return(alphas)
 }
 
-#[END]
+# [END]
 

@@ -13,10 +13,11 @@ simulateUGENE(ugene, x0, tend = 100, dt = 0.1, stochastic = FALSE, mask = NULL)
 initial concentrations of all the genes in the network. The order must be the
 same as that in the data provided to inferNetwork().}
 
-\item{tend}{Final simulation time. Defaults to 100.}
+\item{tend}{Final simulation time. Defaults to 100. Positive numeric.}
 
 \item{dt}{Interval between two time steps. Defaults to 0.1. With tend=100,
-this implies a total of 1000 time steps, plus the initial concentrations.}
+this implies a total of 1000 time steps, plus the initial concentrations.
+Positive numeric, must be smaller than tend.}
 
 \item{stochastic}{An optional logical argument specifying whether the outputs
 of random forests are treated as deterministic (FALSE) or as a distribution
@@ -38,12 +39,12 @@ network given the learned random forests for each node.
 \dontrun{
   # deterministic
   x0 <- Repressilator[1, 2:7]
-  ugene <- inferNetwork(Repressilator, mtry=3L)
+  ugene <- inferNetwork(Repressilator, mtry = 3L)
   trajectory <- simulateUGENE(ugene, x0)
   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 
   # stochastic
-  trajectory <- simulateUGENE(ugene, x0, stochastic=TRUE)
+  trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 }
 

@@ -103,3 +103,5 @@
 #' StochasticHodgkinHuxley
 #' }
 "StochasticHodgkinHuxley"
+
+# [END]

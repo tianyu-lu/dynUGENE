@@ -33,42 +33,59 @@
 #'
 #' @return An object of class "ugene.analysis" that contains the following:
 #' \itemize{
-#'     \item step.errors - a vector of numerics, the average mean squared error
+#'     \item stepErrors - a vector of numerics, the average mean squared error
 #'     of the random forests used for prediction, in the order of sparsest to
 #'     more complex networks.
-#'     \item col.errors - a vector of numerics, same as step.errors but constructed
+#'     \item colErrors - a vector of numerics, same as stepErrors but constructed
 #'     with the masks described above as column-wise.
-#'     \item step.masks - a list of matrices, the masks constructed by the
+#'     \item stepMasks - a list of matrices, the masks constructed by the
 #'     step-wise method.
-#'     \item col.masks - a list of matrices, the masks constructed by the column-wise
+#'     \item colMasks - a list of matrices, the masks constructed by the column-wise
 #'     method.
 #' }
 #'
 #' @examples
 #' \dontrun{
 #'    # Automatic threshold tuning
-#'    ugene <- inferNetwork(Repressilator, mtry=3L)
+#'    ugene <- inferNetwork(Repressilator, mtry = 3L)
 #'    result <- tuneThreshold(Repressilator, ugene)
 #'
 #'    # take a look at network corresponding to the third and seventh
 #'    # step-wise mask (both has drops in mse)
-#'    inferNetwork(Repressilator, mask=result$step.masks[[3]], showPlot=TRUE)
-#'    inferNetwork(Repressilator, mask=result$step.masks[[7]], showPlot=TRUE)
+#'    inferNetwork(Repressilator, mask = result$stepMasks[[3]], showPlot = TRUE)
+#'    inferNetwork(Repressilator, mask = result$stepMasks[[7]], showPlot = TRUE)
 #'
 #'    # Custom threshold tuning
-#'    ugene <- inferNetwork(Repressilator, mtry=3L)
+#'    ugene <- inferNetwork(Repressilator, mtry = 3L)
 #'    result <- tuneThreshold(Repressilator, ugene,
-#'                            cutoffs=seq(from=0.1, to=0.5, by=0.05))
+#'                            cutoffs=seq(from = 0.1, to = 0.5, by = 0.05))
 #' }
 #'
 #' @export
 #' @import ramify
+#' @importFrom graphics par title
 
-tuneThreshold <- function(data, ugene, cutoffs=NULL, showPareto=TRUE) {
+tuneThreshold <- function(data, ugene, cutoffs = NULL, showPareto = TRUE) {
+
+  # ===================== Check user input ===================================
+
+  if (class(ugene) != "ugene") {
+    stop("Parameter ugene must be the output of inferNetwork().")
+  }
+
+  ngenes <- length(ugene$model)
   net <- ugene$network
   maskednet <- net
-  ngenes <- length(ugene$model)
 
+  if (sum(is.na(data)) != 0){
+    stop("Input data contains NA or NaN values. Remove them before analysis.")
+  }
+  if (length(dim(data)) != 2){
+    stop("Input data must be a two dimensional data.frame.")
+  }
+  if (class(data) != 'data.frame') {
+    stop("Input data must be a data.frame.")
+  }
   if (! is.null(cutoffs)) {
     if (class(cutoffs) != "numeric") {
       stop("Cutoffs must be of class numeric.")
@@ -81,43 +98,53 @@ tuneThreshold <- function(data, ugene, cutoffs=NULL, showPareto=TRUE) {
     stop("showPareto must be a logical value.")
   }
 
+  # ===================== Automatic threshold tuning ===========================
+
   if (is.null(cutoffs)){
 
     # Step-wise
-    mask <- matrix(nrow=ngenes, ncol=ngenes) # start with NA values, fill with ones
-    melted_net <- reshape2::melt(net)
-    melted_net <- melted_net[order(-melted_net$value), ]  # sort in decreasing order
+    #
+    mask <- matrix(nrow = ngenes, ncol = ngenes)
+    # reshape into a column, sort in decreasing order
+    meltedNet <- reshape2::melt(net)
+    meltedNet <- meltedNet[order(-meltedNet$value), ]
+    # simplest network: top <ngenes> edges with the highest importance scores
     for (idx in 1:ngenes){
-      mask[melted_net$Var1[idx], melted_net$Var2[idx]] <- 1
+      mask[meltedNet$Var1[idx], meltedNet$Var2[idx]] <- 1
     }
     idx <- ngenes + 1
+    # if any column as all NAs, the mask is not valid
     notValid <- any(as.logical(colSums(is.na(mask)) - ngenes) == 0)
+    # add the edge with the next highest importance score until it is valid
     while (notValid) {
-      mask[melted_net$Var1[idx], melted_net$Var2[idx]] <- 1
+      mask[meltedNet$Var1[idx], meltedNet$Var2[idx]] <- 1
       notValid <- any(as.logical(colSums(is.na(mask)) - ngenes) == 0)
       idx <- idx + 1
     }
+
     # from https://stackoverflow.com/a/13765279
-    masks <- list(mask)
+    # construct all stepMasks, incrementing by one new edge each time
+    stepMasks <- list(mask)
 
     if (idx < (ngenes*ngenes)) {
-      mask_idx <- 2
+      maskIdx <- 2
       for (i in idx:(ngenes*ngenes)) {
         currmask <- mask
-        currmask[melted_net$Var1[i], melted_net$Var2[i]] <- 1
-        masks[[mask_idx]] <- currmask
+        currmask[meltedNet$Var1[i], meltedNet$Var2[i]] <- 1
+        stepMasks[[maskIdx]] <- currmask
         mask <- currmask
-        mask_idx <- mask_idx + 1
+        maskIdx <- maskIdx + 1
       }
     }
 
-
-
     # Column-wise
-    colmax <- ramify::argmax(net, rows = FALSE)  # base network
+    # simplest network: most important edge in each column is kept
+    colmax <- ramify::argmax(net, rows = FALSE)
     nets <- list(colmax)
     newnet <- net
-    for (step in 2:(ngenes-1)) {
+    # get the column-wise ordering of importance scores by setting the current
+    # column-wise max to zero, then calling ramify::argmax again, repeat.
+    for (step in 2:(ngenes - 1)) {
       for (i in 1:ngenes){
         newnet[colmax[i], i] <- 0
       }
@@ -125,86 +152,89 @@ tuneThreshold <- function(data, ugene, cutoffs=NULL, showPareto=TRUE) {
       nets[[step]] <- colmax
     }
 
-    # create similar masks as above, with information in nets
-    colmasks <- list()
-    colmask <- matrix(nrow=ngenes, ncol=ngenes)
+    # create masks from information in nets
+    # each entry in nets gives the row indices for each column
+    colMasks <- list()
+    colmask <- matrix(nrow = ngenes, ncol = ngenes)
     for (i in 1:length(nets)) {
-      row.idx <- nets[[i]]
-      for (j in 1:length(row.idx)) {
-        colmask[row.idx[j], j] <- 1
+      rowIdx <- nets[[i]]
+      for (j in 1:length(rowIdx)) {
+        colmask[rowIdx[j], j] <- 1
       }
-      colmasks[[i]] <- colmask
+      colMasks[[i]] <- colmask
     }
 
     # tune with step-wise masks
-    step.errors <- c()
-    for (mask in masks) {
+    stepErrors <- c()
+    for (mask in stepMasks) {
       # print(mask)
-      result <- inferNetwork(data, mask=mask)
+      result <- inferNetwork(data, mask = mask)
       error <- 0
       for (midx in 1:ngenes) {
         error <- error + mean(result$model[[midx]]$mse)
       }
-      step.errors <- c(step.errors, error)
+      stepErrors <- c(stepErrors, error)
     }
 
     # tune with column-wise masks
-    col.errors <- c()
-    for (mask in colmasks) {
-      result <- inferNetwork(data, mask=mask)
+    colErrors <- c()
+    for (mask in colMasks) {
+      result <- inferNetwork(data, mask = mask)
       error <- 0
       for (midx in 1:ngenes) {
         error <- error + mean(result$model[[midx]]$mse)
       }
-      col.errors <- c(col.errors, error)
+      colErrors <- c(colErrors, error)
     }
 
     if (showPareto) {
-      oldpar <- par(mfrow=c(1,2))
-      plot(step.errors, ylab = "Mean Squared Error", xlab = "Model Complexity")
+      oldpar <- par(mfrow = c(1,2))
+      plot(stepErrors, ylab = "Mean Squared Error", xlab = "Model Complexity")
       title("Step-wise Pareto Front")
-      plot(col.errors, ylab = "Mean Squared Error", xlab = "Model Complexity")
+      plot(colErrors, ylab = "Mean Squared Error", xlab = "Model Complexity")
       title("Column-wise Pareto Front")
       par(oldpar)
     }
 
   } else {
-    cut.errors <- c()
+
+    # ===================== Custom threshold tuning ===========================
+
+    cutErrors <- c()
     cutoffs <- sort(cutoffs)
     for (co in cutoffs){
+      # keep the edges with importance scores above the cutoff
       maskednet[net < co] <- NA
       maskednet[net >= co] <- 1
       if (any(as.logical(colSums(is.na(maskednet)) - ngenes) == 0)) {
         stop(sprintf("Threshold %.2f is too high. An entire column of the network
                      would be removed.", co))
       }
-      result <- inferNetwork(data, mask=maskednet)
+      result <- inferNetwork(data, mask = maskednet)
       error <- 0
       for (midx in 1:ngenes) {
         error <- error + mean(result$model[[midx]]$mse)
       }
-      cut.errors <- c(cut.errors, error)
+      cutErrors <- c(cutErrors, error)
       maskednet <- net
     }
 
     if (showPareto) {
-      plot(1 - cutoffs, cut.errors, ylab = "Mean Squared Error", xlab = "1 - Cutoff")
+      plot(1 - cutoffs, cutErrors, ylab = "Mean Squared Error", xlab = "1 - Cutoff")
       title("Custom cutoff Pareto Front")
     }
   }
 
-
-
-  Results <- list(step.errors = step.errors,
-                  col.errors = col.errors,
-                  step.masks = masks,
-                  col.masks = colmasks)
+  Results <- list(stepErrors = stepErrors,
+                  colErrors = colErrors,
+                  stepMasks = stepMasks,
+                  colMasks = colMasks)
 
   class(Results) <- "ugene.analysis"
   return(Results)
 }
 
-#[END]
+# [END]
 
 
 

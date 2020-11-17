@@ -16,3 +16,5 @@ test_that("return values", {
   expect_equal(dim(result$col.masks[[1]])[1], 6)
   expect_equal(dim(result$col.masks[[1]])[2], 6)
 })
+
+# [END]

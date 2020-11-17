@@ -4,8 +4,10 @@
 #' dynamics of the specified nodes over time. Specify nodes by their names.
 #'
 #' @param simulation The result of simulate().
-#' @param node.names The names of the nodes to plot. Minimum one name.
+#' @param nodeNames The names of the nodes to plot. Minimum one name.
 #'  Maximum six names, as the plot would get cluttered beyond this number.
+#'
+#'  @return Nothing.
 #'
 #' @examples
 #' \dontrun{
@@ -16,35 +18,45 @@
 #' }
 #'
 #' @export
+#' @importFrom graphics points legend title
 
-plotTrajectory <- function(simulation, node.names) {
+plotTrajectory <- function(simulation, nodeNames) {
+
   cols <- c('#1B9E77', '#D95F02', '#7570B3',
             '#E7298A', '#66A61E', '#E6AB02')
-  gene.names <- colnames(simulation$x)
+  geneNames <- colnames(simulation$x)
 
-  if (! all(node.names %in% gene.names)) {
+  # ===================== Check user input ===================================
+
+  if (! all(nodeNames %in% geneNames)) {
     stop("One or more node names do not exist as a gene name.")
   }
-  if (length(node.names) < 1) {
+  if (length(nodeNames) < 1) {
     stop("Must provide at least one node name to plot.")
   }
-  if (length(node.names) > 6) {
+  if (length(nodeNames) > 6) {
     stop("Currently does not support plotting more than 6 nodes simultaneously.")
   }
 
-  plot(simulation$t, simulation$x[[node.names[1]]], type = 'l', xlab = "Time",
-       ylab = "Expression/\nConcentration", col=cols[1])
-  if (length(node.names) > 1) {
-    for (i in 2:length(node.names)) {
-      points(simulation$t, simulation$x[[node.names[i]]], type = 'l',
-             xlab = "Time", col=cols[i])
+  # plot the first trajectory
+  plot(simulation$t, simulation$x[[nodeNames[1]]], type = 'l', xlab = "Time",
+       ylab = "Expression/\nConcentration", col = cols[1])
+
+  # then plot subsequent trajectories with points()
+  if (length(nodeNames) > 1) {
+    for (i in 2:length(nodeNames)) {
+      points(simulation$t, simulation$x[[nodeNames[i]]], type = 'l',
+             xlab = "Time", col = cols[i])
     }
   }
 
   legend("topleft",
-         legend = node.names,
-         pch=15,
-         col = cols[1:length(node.names)],
+         legend = nodeNames,
+         pch = 15,
+         col = cols[1:length(nodeNames)],
          bty = "n")
   title("Inferred System Dynamics")
+
+  return(invisible(NULL))
 }
+# [END]

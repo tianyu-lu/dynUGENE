@@ -40,7 +40,7 @@
 #'
 #' \dontrun{
 #'    data <- grndata::syntren300.data
-#'    ugene <- inferSSNetwork(data, showPlot=TRUE)
+#'    ugene <- inferSSNetwork(data, showPlot = TRUE)
 #' }
 #'
 #' @references
@@ -56,12 +56,15 @@
 #' @importFrom randomForest randomForest importance
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom gplots heatmap.2
+#' @importFrom stats na.omit setNames
+#' @importFrom grDevices colorRampPalette
 
-inferSSNetwork <- function(data, mask=NULL,
-                           ntree=10L, mtry=NULL, alpha=NULL,
-                           seed=777, showPlot=FALSE) {
+inferSSNetwork <- function(data, mask = NULL,
+                           ntree = 10L, mtry = NULL, alpha = NULL,
+                           seed = 777, showPlot = FALSE) {
 
-  # Performing checks of user input
+  # ===================== Check user input ===================================
+
   if (sum(is.na(data)) != 0){
     stop("Input data contains NA or NaN values. Remove them before analysis.")
   }
@@ -77,7 +80,7 @@ inferSSNetwork <- function(data, mask=NULL,
     if (length(dim(mask)) != 2) {
       stop("Mask must be a two-dimensional matrix.")
     }
-    if (dim(mask)[1] != ngenes-1 || dim(mask)[2] != ngenes-1) {
+    if (dim(mask)[1] != (ngenes - 1) || dim(mask)[2] != (ngenes - 1)) {
       stop("Mask must have the same dimensions as the number of nodes.")
     }
   }
@@ -106,7 +109,7 @@ inferSSNetwork <- function(data, mask=NULL,
              positive.")
       }
     }
-  } else {
+  } else if (! is.null(alpha)) {
     stop("Decay rates must either be NULL or a number or a vector.")
   }
   if (class(showPlot) != 'logical') {
@@ -115,84 +118,91 @@ inferSSNetwork <- function(data, mask=NULL,
 
   set.seed(seed)
 
+  # ============ Make steady-state learning samples ============================
+
   nexps <- dim(data)[1]
   ngenes <- dim(data)[2]
-  gene.names <- colnames(data)[1:ngenes]
+  geneNames <- colnames(data)[1:ngenes]
 
   # alpha inference not allowed, either set to a provided value(s) or
   # by default alpha = 1
   if (is.null(alpha)) {
     alphas <- rep(1, ngenes)
-    alphas <- setNames(alphas, gene.names)
+    alphas <- stats::setNames(alphas, geneNames)
   } else if (length(alpha) == 1) {
     alphas <- rep(alpha, ngenes)
-    alphas <- setNames(alphas, gene.names)
+    alphas <- stats::setNames(alphas, geneNames)
   } else {
-    alphas <- alpha[gene.names]
+    alphas <- alpha[geneNames]
   }
 
-  alphas_mat <- matrix(rep(alphas,each=tsteps),nrow=tsteps)
-  decays <- alphas_mat * data
+  alphasMat <- matrix(rep(alphas, each = nexps), nrow = nexps)
+  decays <- alphasMat * data
 
-  ugene.rf.list <- vector(mode="list", length=ngenes)
+  # ===================== Train random forests ================================
+
+  ugeneRfs <- vector(mode = "list", length = ngenes)
 
   if (is.null(mtry)) {
     mtry <- as.integer( ngenes / 3 )
   }
 
   if (is.null(mask)) {
-    for (gene.idx in c(1:ngenes)){
-      ugene.rf.list[[gene.idx]] <-
-        randomForest::randomForest(data[ , ], decays[ ,gene.idx],
-                                   mtry=mtry, ntree=ntree,
-                                   importance=TRUE, na.action=na.omit)
+    for (geneIdx in c(1:ngenes)){
+      ugeneRfs[[geneIdx]] <-
+        randomForest::randomForest(data[ , ], decays[ , geneIdx],
+                                   mtry = mtry, ntree = ntree,
+                                   importance = TRUE, na.action = stats::na.omit)
     }
   } else {
     # for each column j, keep the dependencies on nodes i if mask(i, j) is 1
-    for (gene.idx in c(1:ngenes)){
-      edges <- which(mask[ ,gene.idx] == 1)
-      ugene.rf.list[[gene.idx]] <-
-        randomForest::randomForest(data.frame(data[ , edges]), decays[ ,gene.idx],
-                                   ntree=ntree,
-                                   importance=TRUE, na.action=na.omit)
+    for (geneIdx in c(1:ngenes)){
+      edges <- which(mask[ ,geneIdx] == 1)
+      ugeneRfs[[geneIdx]] <-
+        randomForest::randomForest(data.frame(data[ , edges]), decays[ , geneIdx],
+                                   ntree = ntree,
+                                   importance = TRUE, na.action = stats::na.omit)
     }
   }
 
-  weight.matrix <- matrix(0.0, nrow=ngenes, ncol=ngenes)
-  rownames(weight.matrix) <- gene.names
-  colnames(weight.matrix) <- gene.names
+  weightMatrix <- matrix(0.0, nrow = ngenes, ncol = ngenes)
+  rownames(weightMatrix) <- geneNames
+  colnames(weightMatrix) <- geneNames
 
   if (is.null(mask)) {
-    for (gene.idx in c(1:ngenes)){
-      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
-      weight.matrix[, gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    for (geneIdx in c(1:ngenes)){
+      # Increase in Node Purity measure
+      imp <- randomForest::importance(ugeneRfs[[geneIdx]])[ , 2]
+      # Normalize importance scores
+      weightMatrix[, geneIdx] <- imp / sum(imp)
     }
   } else {
-    for (gene.idx in c(1:ngenes)){
-      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
-      edges <- which(mask[ ,gene.idx] == 1)
-      weight.matrix[edges , gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    for (geneIdx in c(1:ngenes)){
+      imp <- randomForest::importance(ugeneRfs[[geneIdx]])[ , 2]
+      edges <- which(mask[ ,geneIdx] == 1)
+      weightMatrix[edges , geneIdx] <- imp / sum(imp)
     }
   }
-  weight.matrix <- (weight.matrix - min(weight.matrix)) /
-    (max(weight.matrix) - min(weight.matrix))
-  weight.matrix <- round(weight.matrix, digits = 2)
+  weightMatrix <- (weightMatrix - min(weightMatrix)) /
+    (max(weightMatrix) - min(weightMatrix))
+  weightMatrix <- round(weightMatrix, digits = 2)
+
+  # ===================== Show large adjacency matrix =========================
 
   if (showPlot){
-    myCols <- colorRampPalette(c("#000000",
-                                 "#ff0000"))(ngenes)
-    gplots::heatmap.2(weight.matrix,
-                      trace="none", col=myCols, dendrogram='none',
+    myCols <- colorRampPalette(c("#000000", "#ff0000"))(ngenes)
+    gplots::heatmap.2(weightMatrix,
+                      trace = "none", col = myCols, dendrogram = 'none',
                       ylab = "From", xlab = "To", margins = c(2, 2),
                       labRow = FALSE, labCol = FALSE)
   }
 
-  Results <- list(network = weight.matrix,
+  Results <- list(network = weightMatrix,
                   alpha = alphas,
-                  model = ugene.rf.list)
+                  model = ugeneRfs)
 
   class(Results) <- "ugene"
   return(Results)
 }
 
-#[END]
+# [END]

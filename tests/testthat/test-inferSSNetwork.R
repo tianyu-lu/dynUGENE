@@ -11,3 +11,5 @@ test_that("Large example runs properly", {
   expect_equal(sum(ugene$network < 0), 0)
   expect_equal(length(ugene$model), 300)
 })
+
+# [END]

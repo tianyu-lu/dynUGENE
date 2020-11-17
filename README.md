@@ -61,11 +61,11 @@ library("dynUGENE")
 ls(package:dynUGENE)
 #> Warning in ls(package:dynUGENE): 'package:dynUGENE' converted to character
 #> string
-#> [1] "HodgkinHuxley"           "inferNetwork"           
-#> [3] "inferSSNetwork"          "plotTrajectory"         
-#> [5] "Repressilator"           "simulateUGENE"          
-#> [7] "StochasticHodgkinHuxley" "StochasticRepressilator"
-#> [9] "tuneThreshold"
+#>  [1] "estimateDecayRates"      "HodgkinHuxley"          
+#>  [3] "inferNetwork"            "inferSSNetwork"         
+#>  [5] "plotTrajectory"          "Repressilator"          
+#>  [7] "simulateUGENE"           "StochasticHodgkinHuxley"
+#>  [9] "StochasticRepressilator" "tuneThreshold"
 data(package="dynUGENE")
 ```
 
@@ -206,6 +206,8 @@ Applied Bioinformatics, University of Toronto, Toronto, CANADA.
 [issues](https://github.com/tianyu-lu/dynUGENE/issues) and other
 contributions.
 
+Logo made with [Wix](https://www.wix.com/logo/maker).
+
 ## Example
 
 Load and do inference with repressilator data:
@@ -214,13 +216,7 @@ Load and do inference with repressilator data:
 library(dynUGENE)
 
 ## Infer network
-ugene <- inferNetwork(Repressilator, mtry=3L)
-#> Training node 1
-#> Training node 2
-#> Training node 3
-#> Training node 4
-#> Training node 5
-#> Training node 6
+ugene <- inferNetwork(Repressilator, mtry = 3L)
 
 ## Deterministic simulation of the inferred network dynamics
 x0 <- Repressilator[1, 2:7]
@@ -233,7 +229,7 @@ plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ``` r
 
 ## Stochastic simulation
-trajectory <- simulateUGENE(ugene, x0, stochastic=TRUE)
+trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
 plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ```
 

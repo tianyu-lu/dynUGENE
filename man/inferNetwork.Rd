@@ -6,11 +6,11 @@
 \usage{
 inferNetwork(
   data,
-  multiple.exp = FALSE,
+  multipleExp = FALSE,
   mask = NULL,
   ntree = 10L,
   mtry = NULL,
-  alpha = "from.data",
+  alpha = "fromData",
   seed = 777,
   showPlot = FALSE,
   showScores = TRUE
@@ -25,7 +25,7 @@ If multiple time series are included, they must be concatenated as new rows,
 where the first time stamp for the new experiment is less than the last
 time stamp of the previous experiment.}
 
-\item{multiple.exp}{Optional. Defaults to FALSE. When TRUE, data will be
+\item{multipleExp}{Optional. Defaults to FALSE. When TRUE, data will be
 taken to have multiple experiments.}
 
 \item{mask}{A matrix which only includes the values 1 or NA. Must be of size
@@ -44,8 +44,8 @@ of genes. This option is disabled when a mask is provided and the default
 value is used.}
 
 \item{alpha}{Identical to the alpha argument in dynGENIE3:
-Can be "from.data" (default), or a vector containing the gene
-degradation rates, or a single number. When alpha is "from.data", the
+Can be "fromData" (default), or a vector containing the gene
+degradation rates, or a single number. When alpha is "fromData", the
 degradation rate of each gene is estimated from the data, by assuming an
 exponential decay between the highest and lowest observed expression values.
 When alpha is a single number, all the genes are assumed to have the same
@@ -80,10 +80,10 @@ random forests.
 
 \dontrun{
 # Infer network from provided repressilator data
-ugene <- inferNetwork(Repressilator, showPlot=TRUE)
+ugene <- inferNetwork(Repressilator, showPlot = TRUE)
 
 # Stochastic repressilator data
-ugene <- inferNetwork(StochasticRepressilator, multiple.exp=TRUE)
+ugene <- inferNetwork(StochasticRepressilator, multipleExp = TRUE)
 }
 }
 \references{

@@ -15,15 +15,9 @@ Returns a vector of estimated decay rates for each gene.
 \description{
 Code adapted from dynGENIE3.
 For each gene, the decay rate is estimated by assuming that the gene expression
-x(t) follows: x(t) =  A exp(-alpha * t) + C_min,
+x(t) follows: x(t) =  A exp(-alpha * t) + cMin,
 between the highest and lowest expression values.
-C_min is set to the minimum expression value over all genes and all samples.
-}
-\examples{
-
-\dontrun{
-# ?
-}
+cMin is set to the minimum expression value over all genes and all samples.
 }
 \references{
 Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of

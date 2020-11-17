@@ -5,3 +5,6 @@ test_that("decay rates between 0 and 1", {
 })
 
 # other tests are integrated in test-inferNetwork.R and test-inferSSNetwork.R
+
+
+# [END]

@@ -19,3 +19,5 @@ test_that("output correctness", {
 test_that("integration with plotTrajectory", {
   expect_silent(plotTrajectory(trajectory, c("p3", "p2", "p1")))
 })
+
+# [END]

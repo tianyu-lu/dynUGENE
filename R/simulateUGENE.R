@@ -25,20 +25,24 @@
 #' \dontrun{
 #'   # deterministic
 #'   x0 <- Repressilator[1, 2:7]
-#'   ugene <- inferNetwork(Repressilator, mtry=3L)
+#'   ugene <- inferNetwork(Repressilator, mtry = 3L)
 #'   trajectory <- simulateUGENE(ugene, x0)
 #'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 #'
 #'   # stochastic
-#'   trajectory <- simulateUGENE(ugene, x0, stochastic=TRUE)
+#'   trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
 #'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 #' }
 #'
 #' @export
 #' @importFrom randomForest randomForest
+#' @importFrom stats predict var rnorm
 
-simulateUGENE <- function(ugene, x0, tend=100, dt=0.1,
-                          stochastic=FALSE, mask=NULL) {
+simulateUGENE <- function(ugene, x0, tend = 100, dt = 0.1,
+                          stochastic = FALSE, mask = NULL) {
+
+  # ===================== Check user input ===================================
+
   if (class(ugene) != "ugene") {
     stop("Parameter ugene must be the output of inferNetwork().")
   }
@@ -83,46 +87,50 @@ simulateUGENE <- function(ugene, x0, tend=100, dt=0.1,
     }
   }
 
-  # Simulation loop
+  # ======================= Simulation loop ===================================
   xt0 <- x0
-  traj.t <- seq(0, tend, by=dt)
-  traj.x <- data.frame(matrix(nrow=length(traj.t), ncol=ngenes))
-  colnames(traj.x) <- colnames(ugene$network)
-  traj.x[1, ] <- xt0
-  for (t in 2:length(traj.t)) {
-    curr.xt <- data.frame(matrix(nrow=1, ncol=ngenes))
+  trajT <- seq(0, tend, by = dt)
+  trajX <- data.frame(matrix(nrow = length(trajT), ncol = ngenes))
+  colnames(trajX) <- colnames(ugene$network)
+  trajX[1, ] <- xt0
+  for (t in 2:length(trajT)) {
+    currXt <- data.frame(matrix(nrow = 1, ncol = ngenes))
     for (i in 1:ngenes) {
       thisrf <- ugene$model[[i]]
 
       if (stochastic) {
-        y.trees <- predict(thisrf, xt0, predict.all = TRUE)
-        y.mean <- y.trees$aggregate
-        y.std <- sqrt(var(as.vector(y.trees$individual)))
-        y <- rnorm(1, mean=y.mean, sd=y.std)
+        # predict.all gives the errors in all the trees in the forest
+        yTrees <- stats::predict(thisrf, xt0, predict.all = TRUE)
+        yMean <- yTrees$aggregate
+        yStd <- sqrt(stats::var(as.vector(yTrees$individual)))
+        # sample from the empirical mean and std of the random forests' residuals
+        y <- stats::rnorm(1, mean = yMean, sd = yStd)
       } else {
         if (is.null(mask)) {
-          y <- predict(thisrf, xt0)
+          y <- stats::predict(thisrf, xt0)
         } else {
+          # only use the non-masked edges to predict
           edges <- which(mask[ , i] == 1)
-          xt0.allowed <- xt0[,edges]
-          y <- predict(thisrf, xt0.allowed)
+          xt0Allowed <- xt0[ , edges]
+          y <- stats::predict(thisrf, xt0Allowed)
         }
       }
 
       # y = (xt1 - xt0)/(t1 - t0) + alpha*xt0
-
-      curr.xt[i] <- (y - ugene$alpha[i]*as.numeric(xt0[i]))*dt + as.numeric(xt0[i])
+      # solve for xt1:
+      currXt[i] <- (y - ugene$alpha[i]*as.numeric(xt0[i]))*dt + as.numeric(xt0[i])
     }
-    dim(curr.xt) <- c(1, ngenes)
-    traj.x[t, ] <- curr.xt
-    xt0 <- curr.xt
+    dim(currXt) <- c(1, ngenes)
+    trajX[t, ] <- currXt
+    xt0 <- currXt
   }
 
-  results <- list(t=traj.t, x=traj.x)
+  results <- list(t = trajT,
+                  x = trajX)
   class(results) <- "simulation"
   return(results)
 }
 
-#[END]
+# [END]
 
 

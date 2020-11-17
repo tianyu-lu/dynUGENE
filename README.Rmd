@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-![](inst/extdata/logo.PNG){width=20%}
+![](inst/extdata/logo.PNG){width=15%}
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -161,6 +161,8 @@ Rackauckas, C., & Nie, Q. (2017). Adaptive methods for stochastic differential e
 
 This package was developed as part of an assessment for 2020 BCB410H: Applied Bioinformatics, University of Toronto, Toronto, CANADA. `dynUGENE` welcomes [issues](https://github.com/tianyu-lu/dynUGENE/issues) and other contributions.
 
+Logo made with [Wix](https://www.wix.com/logo/maker).
+
 ## Example
 
 Load and do inference with repressilator data:
@@ -169,7 +171,7 @@ Load and do inference with repressilator data:
 library(dynUGENE)
 
 ## Infer network
-ugene <- inferNetwork(Repressilator, mtry=3L)
+ugene <- inferNetwork(Repressilator, mtry = 3L)
 
 ## Deterministic simulation of the inferred network dynamics
 x0 <- Repressilator[1, 2:7]
@@ -177,7 +179,7 @@ trajectory <- simulateUGENE(ugene, x0)
 plotTrajectory(trajectory, c("p3", "p2", "p1"))
 
 ## Stochastic simulation
-trajectory <- simulateUGENE(ugene, x0, stochastic=TRUE)
+trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
 plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ```
 

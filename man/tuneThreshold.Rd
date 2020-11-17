@@ -26,25 +26,28 @@ node, at least one node is used as input to the model.
     Edges are incrementally added by including edges with the
     next highest importance score over the entire matrix..
 }
-If provided, the cutoffs
-will be taken as provided. They must be between 0 and 1 exclusive.}
+If provided, the cutoffs should be a vector of double numerics between
+0 and 1 exclusive. For each cutoff, all connections in the learned network
+with values below the cutoff will be masked. If the result of the mask happens
+to remove an entire column of the network matrix, there will be an error.}
 
 \item{showPareto}{Optional. If TRUE (default), shows a plot of the mean
 squared residual error of the fitted random forests for all nodes, versus the
-number of connections in the network. The ideal network complexity should be
-the smallest number of connections at which the error drops steeply.}
+complexity of the network. The ideal network complexity should be
+the smallest number of connections at which the error drops steeply (known as
+an Pareto front).}
 }
 \value{
 An object of class "ugene.analysis" that contains the following:
 \itemize{
-    \item step.errors - a vector of numerics, the average mean squared error
+    \item stepErrors - a vector of numerics, the average mean squared error
     of the random forests used for prediction, in the order of sparsest to
     more complex networks.
-    \item col.errors - a vector of numerics, same as step.errors but constructed
+    \item colErrors - a vector of numerics, same as stepErrors but constructed
     with the masks described above as column-wise.
-    \item step.masks - a list of matrices, the masks constructed by the
+    \item stepMasks - a list of matrices, the masks constructed by the
     step-wise method.
-    \item col.masks - a list of matrices, the masks constructed by the column-wise
+    \item colMasks - a list of matrices, the masks constructed by the column-wise
     method.
 }
 }
@@ -55,12 +58,19 @@ forests are retrained without those connections.
 }
 \examples{
 \dontrun{
-   ugene <- inferNetwork(Repressilator, mtry=3L)
+   # Automatic threshold tuning
+   ugene <- inferNetwork(Repressilator, mtry = 3L)
    result <- tuneThreshold(Repressilator, ugene)
+
    # take a look at network corresponding to the third and seventh
    # step-wise mask (both has drops in mse)
-   inferNetwork(Repressilator, mask=result$step.masks[[3]], showPlot=TRUE)
-   inferNetwork(Repressilator, mask=result$step.masks[[7]], showPlot=TRUE)
+   inferNetwork(Repressilator, mask = result$stepMasks[[3]], showPlot = TRUE)
+   inferNetwork(Repressilator, mask = result$stepMasks[[7]], showPlot = TRUE)
+
+   # Custom threshold tuning
+   ugene <- inferNetwork(Repressilator, mtry = 3L)
+   result <- tuneThreshold(Repressilator, ugene,
+                           cutoffs=seq(from = 0.1, to = 0.5, by = 0.05))
 }
 
 }

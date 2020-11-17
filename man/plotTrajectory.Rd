@@ -4,13 +4,15 @@
 \alias{plotTrajectory}
 \title{Plots individual node dynamics}
 \usage{
-plotTrajectory(simulation, node.names)
+plotTrajectory(simulation, nodeNames)
 }
 \arguments{
 \item{simulation}{The result of simulate().}
 
-\item{node.names}{The names of the nodes to plot. Minimum one name.
-Maximum six names, as the plot would get cluttered beyond this number.}
+\item{nodeNames}{The names of the nodes to plot. Minimum one name.
+ Maximum six names, as the plot would get cluttered beyond this number.
+
+ @return Nothing.}
 }
 \description{
 Given the result of simulate() (an object of class "simulation"), plots the

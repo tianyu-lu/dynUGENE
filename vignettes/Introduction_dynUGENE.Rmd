@@ -186,8 +186,8 @@ It's clear that the small error in the predicting the change of a species does n
 `dynUGENE` also allows for the user to specify the cutoff thresholds to try.
 
 ```r
-ugene <- inferNetwork(Repressilator, mtry=3L)
-result <- tuneThreshold(Repressilator, ugene, cutoffs=seq(from=0.1, to=0.5, by=0.05))
+ugene <- inferNetwork(Repressilator, mtry = 3L)
+result <- tuneThreshold(Repressilator, ugene, cutoffs = seq(from = 0.1, to = 0.5, by = 0.05))
 ```
 <div style="text-align:center"><img src="custom-pareto.png" alt="rep" width="400"/><div style="text-align:left">
 
@@ -198,9 +198,9 @@ A Pareto front is also clearly visible here. The x-axis is 1-cutoff because the 
 There is also the option to account for uncertainty in the random forests' outputs by setting `stochastic=TRUE` in the `simulateUGENE()` function. 
 
 ```r
-ugene <- inferNetwork(Repressilator, mtry=3L)
+ugene <- inferNetwork(Repressilator, mtry = 3L)
 x0 <- Repressilator[1, 2:7]
-trajectory <- simulateUGENE(ugene, x0, stochastic=TRUE)
+trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
 plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ```
 
@@ -211,20 +211,20 @@ Uncertainty is incorporated by taking the mean and variance of the set of predic
 Here, the model predictions are fairly confident and thus the stochastic behaviour is not pronounced in the simulation. 
 
 ### Hyperparameters
-The learned network is sensitive to the hyperparameters given to the random forest. For example, the `mtry` parameter is the number of variables a random forest uses to make a split. The learned networks under `mtry=1L` or `mtry=2L` are shown below.
+The learned network is sensitive to the hyperparameters given to the random forest. For example, the `mtry` parameter is the number of variables a random forest uses to make a split. The learned networks under `mtry = 1L` or `mtry = 2L` are shown below.
 
 <div style="text-align:center"><img src="rep-mtry1.png" alt="rep" width="400"/><div style="text-align:left">
 <div style="text-align:center"><img src="rep-mtry2.png" alt="rep" width="400"/><div style="text-align:left">
 
-As shown, the learned networks are qualitatively different. For `mtry=1L`, the influence of $m_2$ on $p_2$ is high, while for `mtry=2L` the highest influence goes to $p_1$. 
+As shown, the learned networks are qualitatively different. For `mtry = 1L`, the influence of $m_2$ on $p_2$ is high, while for `mtry = 2L` the highest influence goes to $p_1$. 
 
 ## Case Study 2: Stochastic Repressilator
 
 The provided dataset for a stochastic repressilator gives an example of how to include data from more than one experiment. Here, we train a dynUGENE model on five different simulations of a stochastic repressilator. The training and simulation will take a few minutes due to a large dataset and a longer simulation time.
 
 ```r
-ugene <- inferNetwork(StochasticRepressilator, multiple.exp=TRUE)
-trajectory <- simulateUGENE(ugene, x0, tend=500)
+ugene <- inferNetwork(StochasticRepressilator, multiple.exp = TRUE)
+trajectory <- simulateUGENE(ugene, x0, tend = 500)
 plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ```
 <div style="text-align:center"><img src="rep-stochastic-trajectory.png" alt="rep" width="400"/><div style="text-align:left">
@@ -237,7 +237,7 @@ We will fit a dynUGENE model for steady state gene expression data using `inferS
 
 ```r
 data <- grndata::syntren300.data
-ugene <- inferSSNetwork(data, showPlot=TRUE)
+ugene <- inferSSNetwork(data, showPlot = TRUE)
 ```
 <div style="text-align:center"><img src="syntren-300.png" alt="rep" width="400"/><div style="text-align:left">
 
@@ -245,7 +245,7 @@ The number of nodes for this network is 300. As `grndata` has other datasets upw
 
 ```r
 gplots::heatmap.2(ugene$network[270:300, 0:30],
-                   trace="none", col=myCols,
+                   trace = "none", col = myCols,
                    ylab = "From", xlab = "To", labRow = FALSE, 
                    labCol = FALSE, margins = c(2, 2))
 ```

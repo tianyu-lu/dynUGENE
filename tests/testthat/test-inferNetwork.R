@@ -42,3 +42,5 @@ test_that("multiple experiments error", {
   # Repressilator dataset does not have multiple experiments
   expect_error(inferNetwork(Repressilator, multiple.exp = TRUE))
 })
+
+# [END]

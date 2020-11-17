@@ -12,7 +12,7 @@
 #' If multiple time series are included, they must be concatenated as new rows,
 #' where the first time stamp for the new experiment is less than the last
 #' time stamp of the previous experiment.
-#' @param multiple.exp Optional. Defaults to FALSE. When TRUE, data will be
+#' @param multipleExp Optional. Defaults to FALSE. When TRUE, data will be
 #' taken to have multiple experiments.
 #' @param mask A matrix which only includes the values 1 or NA. Must be of size
 #' numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
@@ -27,8 +27,8 @@
 #' of genes. This option is disabled when a mask is provided and the default
 #' value is used.
 #' @param alpha Identical to the alpha argument in dynGENIE3:
-#' Can be "from.data" (default), or a vector containing the gene
-#' degradation rates, or a single number. When alpha is "from.data", the
+#' Can be "fromData" (default), or a vector containing the gene
+#' degradation rates, or a single number. When alpha is "fromData", the
 #' degradation rate of each gene is estimated from the data, by assuming an
 #' exponential decay between the highest and lowest observed expression values.
 #' When alpha is a single number, all the genes are assumed to have the same
@@ -53,10 +53,10 @@
 #'
 #' \dontrun{
 #' # Infer network from provided repressilator data
-#' ugene <- inferNetwork(Repressilator, showPlot=TRUE)
+#' ugene <- inferNetwork(Repressilator, showPlot = TRUE)
 #'
 #' # Stochastic repressilator data
-#' ugene <- inferNetwork(StochasticRepressilator, multiple.exp=TRUE)
+#' ugene <- inferNetwork(StochasticRepressilator, multipleExp = TRUE)
 #'}
 #' @references
 #'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
@@ -70,12 +70,14 @@
 #' @importFrom randomForest randomForest importance
 #' @import reshape2
 #' @import ggplot2
+#' @importFrom stats na.omit setNames
 
-inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
-                         ntree=10L, mtry=NULL, alpha="from.data",
-                         seed=777, showPlot=FALSE, showScores=TRUE) {
+inferNetwork <- function(data, multipleExp = FALSE, mask = NULL,
+                         ntree = 10L, mtry = NULL, alpha = "fromData",
+                         seed = 777, showPlot = FALSE, showScores = TRUE) {
 
-  # Performing checks of user input
+  # ===================== Check user input ===================================
+
   if (sum(is.na(data)) != 0){
     stop("Input data contains NA or NaN values. Remove them before analysis.")
   }
@@ -85,14 +87,15 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
   if (class(data) != 'data.frame') {
     stop("Input data must be a data.frame.")
   }
-  if (class(multiple.exp) != "logical") {
-    stop("multiple.exp must be of class logical.")
+  if (class(multipleExp) != "logical") {
+    stop("multipleExp must be of class logical.")
   }
 
   ngenes <- dim(data)[2]
 
   if (! is.null(mask)) {
-    if ((sum(is.na(mask)) + sum(mask==1, na.rm = TRUE)) != (ngenes-1)*(ngenes-1)) {
+    if ((sum(is.na(mask)) + sum(mask == 1, na.rm = TRUE))
+                            != (ngenes - 1) * (ngenes - 1)) {
       stop("Mask must only contain 1 or NA entries.")
     }
     if (length(dim(mask)) != 2) {
@@ -110,12 +113,12 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
   }
 
   # alpha checking adapted from dynGENIE3:
-  if (!is.numeric(alpha) && alpha != "from.data") {
-    stop("Parameter alpha must be either 'from.data', a positive number or a
+  if (! is.numeric(alpha) && alpha != "fromData") {
+    stop("Parameter alpha must be either 'fromData', a positive number or a
          vector of positive numbers.")
   }
   if (is.numeric(alpha) && !is.vector(alpha)) {
-    stop("Parameter alpha must be either 'from.data', a positive number or a
+    stop("Parameter alpha must be either 'fromData', a positive number or a
          vector of positive numbers.")
   }
   if (is.numeric(alpha)) {
@@ -147,100 +150,115 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
 
 
 
-  # Construct learning samples (need to account for multiple experiments, alphas)
+  # ===================== Make learning samples ================================
   # data <- read.csv("data/Repressilator.csv")
   tsteps <- dim(data)[1]
   ngenes <- dim(data)[2]
-  gene.names <- colnames(data)[2:ngenes]
+  geneNames <- colnames(data)[2:ngenes]
 
   # alpha inference adapted from dynGENIE3:
-  if (!is.numeric(alpha)) {
+  if (! is.numeric(alpha)) {
     alphas <- estimateDecayRates(data)
   } else if (length(alpha) == 1) {
-    alphas <- rep(alpha, ngenes-1)
-    alphas <- setNames(alphas, gene.names)
+    alphas <- rep(alpha, ngenes - 1)
+    alphas <- stats::setNames(alphas, geneNames)
   } else {
-    alphas <- alpha[gene.names]
+    alphas <- alpha[geneNames]
   }
 
-  if (multiple.exp) {
+  # calculate ddata, the difference between two consecutive time stamps
+  if (multipleExp) {
     # get the boundaries between experiments (dt > 1)
-    dt <- data[2:tsteps, 1] - data[1:tsteps-1, 1]
+    dt <- data[2:tsteps, 1] - data[1:(tsteps - 1), 1]
     bounds <- which(dt < 0)
     if (sum(bounds) == 0){
-      stop("multiple.exp is TRUE but no consecutive experiments found in data.")
+      stop("multipleExp is TRUE but no consecutive experiments found in data.")
     }
-    d.data <- data[2:tsteps, ] - data[1:tsteps-1, ]
-    d.data <- d.data[-bounds, ]
-    tsteps <- dim(d.data)[1] + 1
+    ddata <- data[2:tsteps, ] - data[1:(tsteps - 1), ]
+    # remove the boundaries between experiments
+    ddata <- ddata[-bounds, ]
+    tsteps <- dim(ddata)[1] + 1
   } else {
-    d.data <- data[2:tsteps, ] - data[1:tsteps-1, ]
+    ddata <- data[2:tsteps, ] - data[1:(tsteps-1), ]
   }
 
-  d.data.dt <- d.data[ ,2:ngenes] / d.data[ ,1]
-  alphas_mat <- matrix(rep(alphas,each=tsteps-1),nrow=tsteps-1)
-  decays <- alphas_mat * data[1:tsteps-1, 2:ngenes]
-  d.data.dt <- d.data.dt + decays
-  ngenes <- dim(d.data.dt)[2]
-  data <- data[1:tsteps-1, 2:(ngenes+1)]
+  # ddataDt does not include the first column (time)
+  ddataDt <- ddata[ , 2:ngenes] / ddata[ , 1]
+  alphasMat <- matrix(rep(alphas, each = tsteps - 1), nrow = tsteps - 1)
+  decays <- alphasMat * data[1:(tsteps - 1), 2:ngenes]
+  ddataDt <- ddataDt + decays
+  ngenes <- dim(ddataDt)[2]
+  data <- data[1:(tsteps - 1), 2:(ngenes + 1)]
 
-  ugene.rf.list <- vector(mode="list", length=ngenes)
+  # ===================== Train random forests =================================
 
+  ugeneRfs <- vector(mode = "list", length = ngenes)
+
+  # Default value in randomForest package
   if (is.null(mtry)) {
     mtry <- as.integer( ngenes / 3 )
   }
 
   if (is.null(mask)) {
-    for (gene.idx in c(1:ngenes)){
-      cat(sprintf("Training node %s\n", gene.idx))
-      ugene.rf.list[[gene.idx]] <-
-        randomForest::randomForest(data[ , ], d.data.dt[ ,gene.idx],
-                                   mtry=mtry, ntree=ntree,
-                                   importance=TRUE, na.action=na.omit)
+    for (geneIdx in c(1:ngenes)){
+      # cat(sprintf("Training node %s\n", geneIdx))
+      ugeneRfs[[geneIdx]] <-
+        randomForest::randomForest(data[ , ], ddataDt[ , geneIdx],
+                                   mtry = mtry, ntree = ntree,
+                                   importance=TRUE, na.action=stats::na.omit)
     }
   } else {
     # for each column j, keep the dependencies on nodes i if mask(i, j) is 1
-    for (gene.idx in c(1:ngenes)){
-      edges <- which(mask[ ,gene.idx] == 1)
-      cat(sprintf("Edges to predict node %s: %s\n", gene.idx, edges))
-      ugene.rf.list[[gene.idx]] <-
-        randomForest::randomForest(data.frame(data[ , edges]), d.data.dt[ ,gene.idx],
-                                   ntree=ntree,
-                                   importance=TRUE, na.action=na.omit)
+    for (geneIdx in c(1:ngenes)){
+      edges <- which(mask[ , geneIdx] == 1)
+      # cat(sprintf("Edges to predict node %s: %s\n", geneIdx, edges))
+      ugeneRfs[[geneIdx]] <-
+        randomForest::randomForest(data.frame(data[ , edges]), ddataDt[ , geneIdx],
+                                   ntree = ntree,
+                                   importance = TRUE, na.action = stats::na.omit)
     }
   }
 
-  weight.matrix <- matrix(0.0, nrow=ngenes, ncol=ngenes)
-  rownames(weight.matrix) <- gene.names
-  colnames(weight.matrix) <- gene.names
+  # ================ Get features (importance scores) ===================
+
+  weightMatrix <- matrix(0.0, nrow = ngenes, ncol = ngenes)
+  rownames(weightMatrix) <- geneNames
+  colnames(weightMatrix) <- geneNames
 
   if (is.null(mask)) {
-    for (gene.idx in c(1:ngenes)){
-      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
-      weight.matrix[, gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    for (geneIdx in c(1:ngenes)){
+      # Increase in Node Purity measure
+      imp <- randomForest::importance(ugeneRfs[[geneIdx]])[ , 2]
+      # Normalize importance scores
+      weightMatrix[ , geneIdx] <- imp / sum(imp)
     }
   } else {
-    for (gene.idx in c(1:ngenes)){
-      imp <- randomForest::importance(ugene.rf.list[[gene.idx]])[ ,2]  # Increase in Node Purity measure
-      edges <- which(mask[ ,gene.idx] == 1)
-      weight.matrix[edges , gene.idx] <- imp / sum(imp)  # Normalize importance scores
+    for (geneIdx in c(1:ngenes)){
+      imp <- randomForest::importance(ugeneRfs[[geneIdx]])[ , 2]
+      edges <- which(mask[ , geneIdx] == 1)
+      weightMatrix[edges, geneIdx] <- imp / sum(imp)
     }
   }
-  weight.matrix <- (weight.matrix - min(weight.matrix)) /
-    (max(weight.matrix) - min(weight.matrix))
-  weight.matrix <- round(weight.matrix, digits = 2)
+  weightMatrix <- (weightMatrix - min(weightMatrix)) /
+    (max(weightMatrix) - min(weightMatrix))
+  weightMatrix <- round(weightMatrix, digits = 2)
+
+  # =========== Plot weighted adjacency matrix as heatmap =====================
+
   if (showPlot){
-    melted_weights <- reshape2::melt(weight.matrix)
+    melted_weights <- reshape2::melt(weightMatrix)
     names(melted_weights) <- c("From", "To", "value")
 
     # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
-
+    To <- melted_weights["To"]
+    From <- melted_weights["From"]
+    value <- melted_weights["value"]
     is_heatmap <- ggplot2::ggplot(data = melted_weights,
-                                  ggplot2::aes(x=To, y=From, fill=value)) +
+                                  ggplot2::aes(x = To, y = From, fill = value)) +
       ggplot2::geom_tile(color = "white")+
       ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                            midpoint = 0.5, limit = c(0,1), space = "Lab",
-                           name="Importance\nScore") +
+                           name = "Importance\nScore") +
       ggplot2::theme_minimal()
     if (showScores){
       is_heatmap <- is_heatmap +
@@ -249,12 +267,9 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
     print(is_heatmap)
   }
 
-
-
-
-  Results <- list(network = weight.matrix,
+  Results <- list(network = weightMatrix,
                   alpha = alphas,
-                  model = ugene.rf.list)
+                  model = ugeneRfs)
 
   class(Results) <- "ugene"
   return(Results)

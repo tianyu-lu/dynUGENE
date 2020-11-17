@@ -62,7 +62,7 @@ random forests.
 
 \dontrun{
    data <- grndata::syntren300.data
-   ugene <- inferSSNetwork(data, showPlot=TRUE)
+   ugene <- inferSSNetwork(data, showPlot = TRUE)
 }
 
 }
