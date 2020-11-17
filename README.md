@@ -234,3 +234,14 @@ plotTrajectory(trajectory, c("p3", "p2", "p1"))
 ```
 
 <img src="man/figures/README-example-2.png" width="100%" />
+
+## Runtime
+
+`inferNetwork()` take about 30 seconds for automatic threshold tuning
+for the Repressilator dataset.
+
+`simulateUGENE()` takes about 3 minutes for simulating 5000 timesteps of
+a 6 component system.
+
+Tests: running the unit and integration tests takes about three minutes
+on a typical laptop.

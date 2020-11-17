@@ -7,14 +7,14 @@ test_that("cutoff too high", {
 result <- tuneThreshold(Repressilator, ugene)
 test_that("return values", {
   expect_equal(class(result), "ugene.analysis")
-  expect_equal(length(result$step.errors), 31)
-  expect_equal(length(result$col.errors), 5)
-  expect_equal(length(result$step.masks), 31)
-  expect_equal(length(result$col.masks), 5)
-  expect_equal(dim(result$step.masks[[1]])[1], 6)
-  expect_equal(dim(result$step.masks[[1]])[2], 6)
-  expect_equal(dim(result$col.masks[[1]])[1], 6)
-  expect_equal(dim(result$col.masks[[1]])[2], 6)
+  expect_equal(length(result$stepErrors), 31)
+  expect_equal(length(result$colErrors), 5)
+  expect_equal(length(result$stepMasks), 31)
+  expect_equal(length(result$colMasks), 5)
+  expect_equal(dim(result$stepMasks[[1]])[1], 6)
+  expect_equal(dim(result$stepMasks[[1]])[2], 6)
+  expect_equal(dim(result$colMasks[[1]])[1], 6)
+  expect_equal(dim(result$colMasks[[1]])[2], 6)
 })
 
 # [END]
