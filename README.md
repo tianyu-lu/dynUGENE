@@ -31,9 +31,10 @@ dynGENIE3.
   - Additional datasets (repressilator, Hodgkin-Huxley) both
     deterministic and stochastic.
 
-The package is useful for synthetic biologists who wish to design
-genetic circuits that match some desired dynamical or steady-state
-properties.
+The package is useful for those who wish to build explainable models of
+gene regulatory networks with varying degrees of complexity. The package
+is also useful for synthetic biologists who wish to design genetic
+circuits that match some desired dynamical or steady-state properties.
 
 ## Installation
 

@@ -21,12 +21,15 @@
 #'     Edges are incrementally added by including edges with the
 #'     next highest importance score over the entire matrix..
 #' }
-#' If provided, the cutoffs
-#' will be taken as provided. They must be between 0 and 1 exclusive.
+#' If provided, the cutoffs should be a vector of double numerics between
+#' 0 and 1 exclusive. For each cutoff, all connections in the learned network
+#' with values below the cutoff will be masked. If the result of the mask happens
+#' to remove an entire column of the network matrix, there will be an error.
 #' @param showPareto Optional. If TRUE (default), shows a plot of the mean
 #' squared residual error of the fitted random forests for all nodes, versus the
-#' number of connections in the network. The ideal network complexity should be
-#' the smallest number of connections at which the error drops steeply.
+#' complexity of the network. The ideal network complexity should be
+#' the smallest number of connections at which the error drops steeply (known as
+#' an Pareto front).
 #'
 #' @return An object of class "ugene.analysis" that contains the following:
 #' \itemize{
@@ -43,12 +46,19 @@
 #'
 #' @examples
 #' \dontrun{
+#'    # Automatic threshold tuning
 #'    ugene <- inferNetwork(Repressilator, mtry=3L)
 #'    result <- tuneThreshold(Repressilator, ugene)
+#'
 #'    # take a look at network corresponding to the third and seventh
 #'    # step-wise mask (both has drops in mse)
 #'    inferNetwork(Repressilator, mask=result$step.masks[[3]], showPlot=TRUE)
 #'    inferNetwork(Repressilator, mask=result$step.masks[[7]], showPlot=TRUE)
+#'
+#'    # Custom threshold tuning
+#'    ugene <- inferNetwork(Repressilator, mtry=3L)
+#'    result <- tuneThreshold(Repressilator, ugene,
+#'                            cutoffs=seq(from=0.1, to=0.5, by=0.05))
 #' }
 #'
 #' @export
@@ -56,8 +66,20 @@
 
 tuneThreshold <- function(data, ugene, cutoffs=NULL, showPareto=TRUE) {
   net <- ugene$network
-  tempnet <- net
+  maskednet <- net
   ngenes <- length(ugene$model)
+
+  if (! is.null(cutoffs)) {
+    if (class(cutoffs) != "numeric") {
+      stop("Cutoffs must be of class numeric.")
+    }
+    if (sum(cutoffs >= 1) != 0 || sum(cutoffs <= 0) != 0) {
+      stop("Cutoffs must be between 0 and 1 exclusive.")
+    }
+  }
+  if (class(showPareto) != 'logical') {
+    stop("showPareto must be a logical value.")
+  }
 
   if (is.null(cutoffs)){
 
@@ -138,23 +160,37 @@ tuneThreshold <- function(data, ugene, cutoffs=NULL, showPareto=TRUE) {
     }
 
     if (showPareto) {
-      par(mfrow=c(1,2))
+      oldpar <- par(mfrow=c(1,2))
       plot(step.errors, ylab = "Mean Squared Error", xlab = "Model Complexity")
       title("Step-wise Pareto Front")
       plot(col.errors, ylab = "Mean Squared Error", xlab = "Model Complexity")
       title("Column-wise Pareto Front")
+      par(oldpar)
     }
 
   } else {
-
+    cut.errors <- c()
+    cutoffs <- sort(cutoffs)
     for (co in cutoffs){
-      tempnet[tempnet < co] <- NA
-      if (any(colSums(is.na(tempnet)) - ngenes) == 0) {
-        stop(sprintf("Threshold %.2f is too low. An entire column of the network
+      maskednet[net < co] <- NA
+      maskednet[net >= co] <- 1
+      if (any(as.logical(colSums(is.na(maskednet)) - ngenes) == 0)) {
+        stop(sprintf("Threshold %.2f is too high. An entire column of the network
                      would be removed.", co))
       }
+      result <- inferNetwork(data, mask=maskednet)
+      error <- 0
+      for (midx in 1:ngenes) {
+        error <- error + mean(result$model[[midx]]$mse)
+      }
+      cut.errors <- c(cut.errors, error)
+      maskednet <- net
     }
 
+    if (showPareto) {
+      plot(1 - cutoffs, cut.errors, ylab = "Mean Squared Error", xlab = "1 - Cutoff")
+      title("Custom cutoff Pareto Front")
+    }
   }
 
 

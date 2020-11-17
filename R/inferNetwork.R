@@ -92,6 +92,9 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
   ngenes <- dim(data)[2]
 
   if (! is.null(mask)) {
+    if ((sum(is.na(mask)) + sum(mask==1, na.rm = TRUE)) != (ngenes-1)*(ngenes-1)) {
+      stop("Mask must only contain 1 or NA entries.")
+    }
     if (length(dim(mask)) != 2) {
       stop("Mask must be a two-dimensional matrix.")
     }
@@ -226,7 +229,6 @@ inferNetwork <- function(data, multiple.exp=FALSE, mask=NULL,
   weight.matrix <- (weight.matrix - min(weight.matrix)) /
     (max(weight.matrix) - min(weight.matrix))
   weight.matrix <- round(weight.matrix, digits = 2)
-  # print(weight.matrix)
   if (showPlot){
     melted_weights <- reshape2::melt(weight.matrix)
     names(melted_weights) <- c("From", "To", "value")

@@ -10,16 +10,11 @@
 #'
 #' @return Returns a vector of estimated decay rates for each gene.
 #'
-#' @examples
-#'
-#' \dontrun{
-#' # ?
-#'}
 #' @references
 #'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
 #'gene networks from time series expression data. \emph{Scientific reports},
 #'8(1), 1-12.
-#'
+
 estimateDecayRates <- function(data) {
 
   time.steps <- dim(data)[1]
@@ -58,5 +53,4 @@ estimateDecayRates <- function(data) {
 }
 
 #[END]
-# data <- read.csv("data/Repressilator.csv")
 

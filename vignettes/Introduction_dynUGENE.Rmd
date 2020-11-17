@@ -136,7 +136,7 @@ plotTrajectory(trajectory, c("p3", "p2", "p1"))
 
 Here we can see that the dynamics of the simulation resembles the data fairly well. For a quantitative measure of the accuracy of the simulation compared to the data, the mean squared errors of all the trees can be obtained by `ugene$model[[i]]$mse`, for the trees used to predict the `i`th gene.
 
-### Pruning
+### Automatic Threshold Tuning
 However, as is the case with many biological systems, a dense, fully-connected network is not realistic. As seen in the repressilator equations, $m_1$ is only influenced by $p_3$ and $m_1$. Promisingly, the heatmap indeed shows that $p_3$ and $m_1$ are the main contributers to $m_1$, but there are also nonzero contributions from the other components. 
 
 To sparsify the learned network, dynUGENE provides two methods of masking out connections, described in detail in `?tuneThreshold`. The simplest network is one where there is a nonzero value in each column, an example is shown below.
@@ -181,6 +181,18 @@ Mask 7:
 It's clear that the small error in the predicting the change of a species does not imply a small error in the simulated trajectory. But mask 16 does show some good oscillatory behaviour.
 
 <div style="text-align:center"><img src="rep-traj-mask16.png" alt="rep" width="400"/><div style="text-align:left">
+
+### Custom Threshold Tuning
+`dynUGENE` also allows for the user to specify the cutoff thresholds to try.
+
+```r
+ugene <- inferNetwork(Repressilator, mtry=3L)
+result <- tuneThreshold(Repressilator, ugene, cutoffs=seq(from=0.1, to=0.5, by=0.05))
+```
+<div style="text-align:center"><img src="custom-pareto.png" alt="rep" width="400"/><div style="text-align:left">
+
+A Pareto front is also clearly visible here. The x-axis is 1-cutoff because the higher the cutoff, the lower the network complexity. Take care not to specify a threshold that would mask out an entire column, since in that case there will be no inputs to the random forest that predicts the values of that column's node. 
+
 
 ### Uncertainty-aware Simulations
 There is also the option to account for uncertainty in the random forests' outputs by setting `stochastic=TRUE` in the `simulateUGENE()` function. 

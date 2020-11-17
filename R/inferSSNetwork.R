@@ -106,6 +106,8 @@ inferSSNetwork <- function(data, mask=NULL,
              positive.")
       }
     }
+  } else {
+    stop("Decay rates must either be NULL or a number or a vector.")
   }
   if (class(showPlot) != 'logical') {
     stop("showPlot must be a logical value.")

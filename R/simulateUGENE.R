@@ -7,9 +7,10 @@
 #' @param x0 Required. A data.frame object with a single row, giving the
 #' initial concentrations of all the genes in the network. The order must be the
 #' same as that in the data provided to inferNetwork().
-#' @param tend Final simulation time. Defaults to 100.
+#' @param tend Final simulation time. Defaults to 100. Positive numeric.
 #' @param dt Interval between two time steps. Defaults to 0.1. With tend=100,
 #' this implies a total of 1000 time steps, plus the initial concentrations.
+#' Positive numeric, must be smaller than tend.
 #' @param stochastic An optional logical argument specifying whether the outputs
 #' of random forests are treated as deterministic (FALSE) or as a distribution
 #' from which a sample is drawn (TRUE). Defaults to FALSE.
@@ -38,13 +39,41 @@
 
 simulateUGENE <- function(ugene, x0, tend=100, dt=0.1,
                           stochastic=FALSE, mask=NULL) {
+  if (class(ugene) != "ugene") {
+    stop("Parameter ugene must be the output of inferNetwork().")
+  }
   ngenes <- length(ugene$model)
-
+  if (class(x0) != "data.frame") {
+    stop("x0 must be of class data.frame.")
+  }
+  if (class(tend) != "numeric" || class(dt) != "numeric") {
+    stop("tend and dt must be of class numeric.")
+  }
+  if (! is.null(dim(tend)) || ! is.null(dim(dt))) {
+    stop("tend and dt must be single numeric values, not vectors.")
+  }
   if (class(stochastic) != "logical") {
     stop("Stochastic must be of class logical.")
   }
   if (ngenes != length(x0)) {
     stop("Number of genes must be equal to the number of initial concentrations x0.")
+  }
+  if (tend <= dt) {
+    stop("tend must be greater than the time between steps dt.")
+  }
+  if (tend <= 0 || dt <= 0) {
+    stop("tend and dt must be positive numbers.")
+  }
+  if (! is.null(mask)) {
+    if ((sum(is.na(mask)) + sum(mask==1, na.rm = TRUE)) != (ngenes)*(ngenes)) {
+      stop("Mask must only contain 1 or NA entries.")
+    }
+    if (length(dim(mask)) != 2) {
+      stop("Mask must be a two-dimensional matrix.")
+    }
+    if (dim(mask)[1] != ngenes || dim(mask)[2] != ngenes) {
+      stop("Mask must have the same dimensions as the number of nodes.")
+    }
   }
 
   variances <- vector(mode="numeric", length=ngenes)
