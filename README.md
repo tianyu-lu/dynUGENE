@@ -15,8 +15,8 @@ expression data.
 
 ## Description
 
-dynUGENE build off dynGENIE3, an algorithm to infer gene network
-architecture and dynamics given time-series or steady-state expression
+dynUGENE builds off dynGENIE3, an algorithm to infer gene network
+architecture and dynamics given time series or steady-state expression
 data.
 
 dynUGENE provides several additional functionalities on top of
