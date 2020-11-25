@@ -5,18 +5,18 @@
 #'
 #' @param ugene Required. Output of the inferNetwork() function.
 #' @param x0 Required. A data.frame object with a single row, giving the
-#' initial concentrations of all the genes in the network. The order must be the
-#' same as that in the data provided to inferNetwork().
+#'    initial concentrations of all the genes in the network. The order must be the
+#'    same as that in the data provided to inferNetwork().
 #' @param tend Final simulation time. Defaults to 100. Positive numeric.
 #' @param dt Interval between two time steps. Defaults to 0.1. With tend=100,
-#' this implies a total of 1000 time steps, plus the initial concentrations.
-#' Positive numeric, must be smaller than tend.
+#'    this implies a total of 1000 time steps, plus the initial concentrations.
+#'    Positive numeric, must be smaller than tend.
 #' @param stochastic An optional logical argument specifying whether the outputs
-#' of random forests are treated as deterministic (FALSE) or as a distribution
-#' from which a sample is drawn (TRUE). Defaults to FALSE.
+#'    of random forests are treated as deterministic (FALSE) or as a distribution
+#'    from which a sample is drawn (TRUE). Defaults to FALSE.
 #' @param mask Optional. Same format as the mask argument in tuneThreshold().
-#' To simulate a sparse network where edges are removed according to tuneThreshold(),
-#' a mask must be provided.
+#'    To simulate a sparse network where edges are removed according to tuneThreshold(),
+#'    a mask must be provided.
 #'
 #' @return Returns an object of class "simulation" containing the time stamps
 #' in result.t and simulated values of all genes in result.x

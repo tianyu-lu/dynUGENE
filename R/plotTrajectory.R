@@ -5,15 +5,15 @@
 #'
 #' @param simulation The result of simulate().
 #' @param nodeNames The names of the nodes to plot. Minimum one name.
-#'  Maximum six names, as the plot would get cluttered beyond this number.
+#'    Maximum six names, as the plot would get cluttered beyond this number.
 #'
-#'  @return Nothing.
+#'  @return Shows a plot of the simulated trajectory.
 #'
 #' @examples
 #' \dontrun{
 #'   x0 <- Repressilator[1, 2:7]
 #'   ugene <- inferNetwork(Repressilator)
-#'   trajectory <- simulate(ugene, x0)
+#'   trajectory <- simulateUGENE(ugene, x0)
 #'   plotTrajectory(trajectory, c("p3", "p2", "p1"))
 #' }
 #'

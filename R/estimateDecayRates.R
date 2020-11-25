@@ -6,9 +6,15 @@
 #' between the highest and lowest expression values.
 #' cMin is set to the minimum expression value over all genes and all samples.
 #'
-#' @param data The data.frame provided as input to inferNetwork().
+#' @param data The data.frame provided as input to inferNetwork(). Refer to the
+#'    data parameter in inferNetwork() for more details.
 #'
 #' @return Returns a vector of estimated decay rates for each gene.
+#'
+#' @examples
+#' \dontrun{
+#' alphas <- estimateDecayRates(Repressilator)
+#' }
 #'
 #' @export
 #' @references

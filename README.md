@@ -15,8 +15,8 @@ expression data.
 
 ## Description
 
-dynUGENE builds off dynGENIE3, an algorithm to infer gene network
-architecture and dynamics given time series or steady-state expression
+dynUGENE build off dynGENIE3, an algorithm to infer gene network
+architecture and dynamics given time-series or steady-state expression
 data.
 
 dynUGENE provides several additional functionalities on top of
@@ -58,9 +58,7 @@ library("dynUGENE")
 
 ``` r
 library("dynUGENE")
-ls(package:dynUGENE)
-#> Warning in ls(package:dynUGENE): 'package:dynUGENE' converted to character
-#> string
+ls("package:dynUGENE")
 #>  [1] "estimateDecayRates"      "HodgkinHuxley"          
 #>  [3] "inferNetwork"            "inferSSNetwork"         
 #>  [5] "plotTrajectory"          "Repressilator"          
@@ -96,7 +94,7 @@ the vignette here:
 
 ``` r
 browseVignettes("dynUGENE")
-#> No vignettes found by browseVignettes("dynUGENE")
+#> starting httpd help server ... done
 ```
 
 ## Contributions
@@ -121,82 +119,84 @@ question.
 ## References
 
 [Elowitz, M. B., & Leibler, S. (2000). A synthetic oscillatory network
-of transcriptional regulators.
-, 403(6767), 335-338.](https://www.nature.com/articles/35002125)
+of transcriptional regulators. *Nature*, 403(6767),
+335-338.](https://www.nature.com/articles/35002125)
 
 [Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
-gene networks from time series expression data.
-, 8(1), 1-12.](https://www.nature.com/articles/s41598-018-21715-0)
+gene networks from time series expression data. *Scientific reports*,
+8(1), 1-12.](https://www.nature.com/articles/s41598-018-21715-0)
 
 [Pau Bellot, Catharina Olsen and Patrick E Meyer (2020). grndata:
-Synthetic Expression Data for Gene Regulatory Network Inference. R
-package version
+Synthetic Expression Data for Gene Regulatory Network Inference. *R
+package* version
 1.20.0.](https://bioconductor.org/packages/release/data/experiment/vignettes/grndata/inst/doc/grndata.html)
 
 [Hodgkin, A. L., & Huxley, A. F. (1952). A quantitative description of
 membrane current and its application to conduction and excitation in
-nerve.
-, 117(4), 500.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1392413/)
+nerve. *The Journal of physiology*, 117(4),
+500.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1392413/)
 
 [Mangan, N. M., Brunton, S. L., Proctor, J. L., & Kutz, J. N. (2016).
 Inferring biological networks by sparse identification of nonlinear
-dynamics.
-, 2(1), 52-63.](https://ieeexplore.ieee.org/abstract/document/7809160)
+dynamics. *IEEE Transactions on Molecular, Biological and Multi-Scale
+Communications*, 2(1),
+52-63.](https://ieeexplore.ieee.org/abstract/document/7809160)
 
 Hadley Wickham, Peter Danenberg, Gábor Csárdi and Manuel Eugster (2020).
-roxygen2: In-Line Documentation for R. R package version 7.1.1.
+roxygen2: In-Line Documentation for R. *R package* version 7.1.1.
 <https://CRAN.R-project.org/package=roxygen2>
 
 Hadley Wickham, Jim Hester and Winston Chang (2020). devtools: Tools to
-Make Developing R Packages Easier. R package version 2.3.2.
+Make Developing R Packages Easier. *R package* version 2.3.2.
 <https://CRAN.R-project.org/package=devtools>
 
-Hadley Wickham. testthat: Get Started with Testing. The R Journal,
+Hadley Wickham. testthat: Get Started with Testing. *The R Journal*,
 vol. 3, no. 1, pp. 5–10, 2011
 
 Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report
-Generation in R. R package version 1.30.
+Generation in R. *R package* version 1.30.
 
 Hadley Wickham and Jennifer Bryan (2020). usethis: Automate Package and
-Project Setup. R package version 1.6.3.
+Project Setup. *R package* version 1.6.3.
 <https://CRAN.R-project.org/package=usethis>
 
 A. Liaw and M. Wiener (2002). Classification and Regression by
-randomForest. R News 2(3), 18–22.
+randomForest. *R News* 2(3), 18–22.
 
 R Core Team (2020). R: A language and environment for statistical
-computing. R Foundation for Statistical Computing, Vienna, Austria. URL
-<https://www.R-project.org/>.
+computing. *R Foundation for Statistical Computing*, Vienna, Austria.
+URL <https://www.R-project.org/>.
 
-Hadley Wickham (2007). Reshaping Data with the reshape Package. Journal
-of Statistical Software, 21(12), 1-20. URL
+Hadley Wickham (2007). Reshaping Data with the reshape Package. *Journal
+of Statistical Software*, 21(12), 1-20. URL
 <http://www.jstatsoft.org/v21/i12/>.
 
-H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag
-New York, 2016.
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+*Springer-Verlag New York*, 2016.
 
-Brandon Greenwell (2016). ramify: Additional Matrix Functionality. R
-package version 0.3.3. <https://CRAN.R-project.org/package=ramify>
+Brandon Greenwell (2016). ramify: Additional Matrix Functionality. *R
+package* version 0.3.3. <https://CRAN.R-project.org/package=ramify>
 
-Erich Neuwirth (2014). RColorBrewer: ColorBrewer Palettes. R package
+Erich Neuwirth (2014). RColorBrewer: ColorBrewer Palettes. *R package*
 version 1.1-2. <https://CRAN.R-project.org/package=RColorBrewer>
 
 Gregory R. Warnes, Ben Bolker, Lodewijk Bonebakker, Robert Gentleman,
 Wolfgang Huber, Andy Liaw, Thomas Lumley, Martin Maechler, Arni
 Magnusson, Steffen Moeller, Marc Schwartz and Bill Venables (2020).
-gplots: Various R Programming Tools for Plotting Data. R package version
-3.1.0. <https://CRAN.R-project.org/package=gplots>
+gplots: Various R Programming Tools for Plotting Data. *R package*
+version 3.1.0. <https://CRAN.R-project.org/package=gplots>
 
 Wickham, H. and Bryan, J. (2019). R Packages (2nd edition). Newton,
 Massachusetts: O’Reilly Media.
 
 Rackauckas, C., & Nie, Q. (2017). Differentialequations. jl–a performant
 and feature-rich ecosystem for solving differential equations in julia.
-, 5(1).
+*Journal of Open Research Software*, 5(1).
 
 Rackauckas, C., & Nie, Q. (2017). Adaptive methods for stochastic
 differential equations via natural embeddings and rejection sampling
-with memory. . Series B, 22(7), 2731.
+with memory. *Discrete and continuous dynamical systems*. Series B,
+22(7), 2731.
 
 ## Acknowledgements
 

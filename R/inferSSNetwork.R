@@ -5,23 +5,24 @@
 #' decay rates of each species, and the dynamics of the network learned by \eqn{p}
 #' random forests.
 #'
-#' @param data A data.frame of gene expression values. Rows are different experiments.
-#' Columns names are gene names.
+#' @param data A data.frame of gene expression values, should be numerics.
+#'    Each row is a different measurement at steady state. Each column corresponds
+#'    to one gene.
 #' @param mask A matrix which only includes the values 1 or NA. Must be of size
-#' numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
-#' the value of \eqn{j}. Otherwise, the connection is snipped and such a
-#' dependency is not allowed when training the random forests.
+#'    numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
+#'    the value of \eqn{j}. Otherwise, the connection is snipped and such a
+#'    dependency is not allowed when training the random forests.
 #' @param ntree A positive integer indicating the number of trees in each
-#' random forest. Equivalent to the ntree argument in the randomForest package.
-#' Defaults to 10L.
+#'    random forest. Equivalent to the ntree argument in the randomForest package.
+#'    Defaults to 10L.
 #' @param mtry A positive integer indicating the number of randomly sampled
-#' candidates to use at each split of each random forest. Equivalent to the mtry
-#' argument in the randomForest package. Defaults to p/3, where p is the number
-#' of genes. This option is disabled when a mask is provided and the default
-#' value is used.
+#'    candidates to use at each split of each random forest. Equivalent to the mtry
+#'    argument in the randomForest package. Defaults to p/3, where p is the number
+#'    of genes. This option is disabled when a mask is provided and the default
+#'    value is used.
 #' @param alpha If not provided, assumed to be 1 for all genes.
-#' If provided, can be a vector of the degradation rates of each gene,
-#' or a single number (same rate for all genes).
+#'    If provided, can be a vector of the degradation rates of each gene,
+#'    or a single number (same rate for all genes).
 #' @param seed Random seed for reproducibility. Defaults to 777.
 #' @param showPlot Plots the weights matrix as a heatmap. Defaults to FALSE.
 #'

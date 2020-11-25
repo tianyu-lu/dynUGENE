@@ -5,38 +5,39 @@
 #' decay rates of each species, and the dynamics of the network learned by \eqn{p}
 #' random forests.
 #'
-#' @param data A data.frame of gene expression values. Row names are optional.
-#' First column is the time stamps. Time stamps do not need to be regularly spaced.
-#' Subsequent columns are the gene concentrations
-#' measured at the corresponding time stamps.
-#' If multiple time series are included, they must be concatenated as new rows,
-#' where the first time stamp for the new experiment is less than the last
-#' time stamp of the previous experiment.
+#' @param data A data.frame of gene expression values, should be numerics. Each
+#'    row is a measurement of all genes in the system at the indicated time point
+#'    given in the first column entry of that row. Time stamps do not need to be
+#'    regularly spaced. Subsequent columns are the gene concentrations
+#'    measured at the corresponding time stamps.
+#'    If multiple time series are included, they must be concatenated as new rows,
+#'    where the first time stamp for the new experiment is less than the last
+#'    time stamp of the previous experiment.
 #' @param multipleExp Optional. Defaults to FALSE. When TRUE, data will be
-#' taken to have multiple experiments.
+#'    taken to have multiple experiments.
 #' @param mask A matrix which only includes the values 1 or NA. Must be of size
-#' numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
-#' the value of \eqn{j}. Otherwise, the connection is snipped and such a
-#' dependency is not allowed when training the random forests.
+#'    numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting
+#'    the value of \eqn{j}. Otherwise, the connection is snipped and such a
+#'    dependency is not allowed when training the random forests.
 #' @param ntree A positive integer indicating the number of trees in each
-#' random forest. Equivalent to the ntree argument in the randomForest package.
-#' Defaults to 10L.
+#'    random forest. Equivalent to the ntree argument in the randomForest package.
+#'    Defaults to 10L.
 #' @param mtry A positive integer indicating the number of randomly sampled
-#' candidates to use at each split of each random forest. Equivalent to the mtry
-#' argument in the randomForest package. Defaults to p/3, where p is the number
-#' of genes. This option is disabled when a mask is provided and the default
-#' value is used.
+#'    candidates to use at each split of each random forest. Equivalent to the mtry
+#'    argument in the randomForest package. Defaults to p/3, where p is the number
+#'    of genes. This option is disabled when a mask is provided and the default
+#'    value is used.
 #' @param alpha Identical to the alpha argument in dynGENIE3:
-#' Can be "fromData" (default), or a vector containing the gene
-#' degradation rates, or a single number. When alpha is "fromData", the
-#' degradation rate of each gene is estimated from the data, by assuming an
-#' exponential decay between the highest and lowest observed expression values.
-#' When alpha is a single number, all the genes are assumed to have the same
-#' degradation rate alpha.
+#'    Can be "fromData" (default), or a vector containing the gene
+#'    degradation rates, or a single number. When alpha is "fromData", the
+#'    degradation rate of each gene is estimated from the data, by assuming an
+#'    exponential decay between the highest and lowest observed expression values.
+#'    When alpha is a single number, all the genes are assumed to have the same
+#'    degradation rate alpha.
 #' @param seed Random seed for reproducibility. Defaults to 777.
 #' @param showPlot Plots the weights matrix as a heatmap. Defaults to FALSE.
 #' @param showScores Show the importance scores when showPlot is set to TRUE.
-#' Defaults to TRUE.
+#'    Defaults to TRUE.
 #'
 #' @return Returns an object of class "ugene" with the following items:
 #' \itemize{
@@ -59,9 +60,9 @@
 #' ugene <- inferNetwork(StochasticRepressilator, multipleExp = TRUE)
 #'}
 #' @references
-#'Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
-#'gene networks from time series expression data. \emph{Scientific reports},
-#'8(1), 1-12.
+#' Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of
+#' gene networks from time series expression data. \emph{Scientific reports},
+#' 8(1), 1-12.
 #'
 #' A. Liaw and M. Wiener (2002). Classification and Regression by
 #' randomForest. R News 2(3), 18--22.
@@ -95,7 +96,7 @@ inferNetwork <- function(data, multipleExp = FALSE, mask = NULL,
 
   if (! is.null(mask)) {
     if ((sum(is.na(mask)) + sum(mask == 1, na.rm = TRUE))
-                            != (ngenes - 1) * (ngenes - 1)) {
+        != (ngenes - 1) * (ngenes - 1)) {
       stop("Mask must only contain 1 or NA entries.")
     }
     if (length(dim(mask)) != 2) {
@@ -257,8 +258,8 @@ inferNetwork <- function(data, multipleExp = FALSE, mask = NULL,
                                   ggplot2::aes(x = To, y = From, fill = value)) +
       ggplot2::geom_tile(color = "white")+
       ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
-                           midpoint = 0.5, limit = c(0,1), space = "Lab",
-                           name = "Importance\nScore") +
+                                    midpoint = 0.5, limit = c(0,1), space = "Lab",
+                                    name = "Importance\nScore") +
       ggplot2::theme_minimal()
     if (showScores){
       is_heatmap <- is_heatmap +
