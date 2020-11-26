@@ -28,7 +28,8 @@ ui <- fluidPage(
                    choices = list("True" = 1, "False" = 2), selected = 2),
       numericInput(inputId = "ntree",
                    label = "Number of Trees",
-                   value = 10),
+                   value = 10,
+                   min = 1, max = 1000),
       numericInput(inputId = 'mtry',
                    label = "Mtry",
                    value = 3),
@@ -38,30 +39,36 @@ ui <- fluidPage(
       radioButtons(inputId = "showScores",
                    label = "Show Importance Scores",
                    choices = list("True" = 1, "False" = 2), selected = 1),
+    ),
+
+    mainPanel(
+
       actionButton(inputId = "inferBtn",
                    label = "Infer Network"),
-      br(),
-      br(),
       actionButton(inputId = "simulateBtn",
                    label = "Simulate"),
-      br(),
-      br(),
       actionButton(inputId = "tuneBtn",
                    label = "Tune Threshold"),
-      br(),
-      br(),
       actionButton(inputId = "customBtn",
                    label = "Custom Tuning"),
       br(),
       br(),
-    ),
 
-    mainPanel(
-      h2("Inferred Network"),
-      selectInput(inputId = 'whichNetwork',
-                  label = 'Choose which network to show:',
-                  choices = c("Network 1")),
-      plotOutput("networkMatrix"),
+      tabsetPanel(type = "tabs",
+                  tabPanel("Inferred Network",
+                           numericInput(inputId = 'whichNetwork',
+                                        label = "Which network to show",
+                                        value = 1),
+                           actionButton(inputId = "updateNetwork",
+                                        label = "Update Network"),
+                           plotOutput("networkMatrix")),
+                  tabPanel("Pareto Front",
+                           fluidRow(
+                             splitLayout(cellWidths = c("50%", "50%"),
+                                         plotOutput('stepPareto'),
+                                         plotOutput('colPareto')))
+                           )
+      )
     )
   )
 )
@@ -103,9 +110,30 @@ server <- function(input, output) {
     })
   })
 
+  startUpdate <- eventReactive(eventExpr = input$updateNetwork, {
+    withProgress(message = 'Inferring Masked Network', value = 0, {
+      masks <- readRDS("stepMasks.rds")
+      mask <- masks[[input$whichNetwork]]
+
+      dynUGENE::inferNetwork(inputData(),
+                             multipleExp = (input$multipleExp == 1),
+                             ntree = as.integer(input$ntree),
+                             mtry = as.integer(input$mtry),
+                             seed = as.integer(input$seed),
+                             showPlot = FALSE,
+                             mask = mask)
+    })
+  })
+
   output$networkMatrix <- renderPlot({
-    if (! is.null(startInference)) {
+    weightMatrix <- NULL
+    if (! is.null(startUpdate)) {
+      weightMatrix <- startUpdate()$network
+      startUpdate <- NULL
+    } else if (! is.null(startInference)) {
       weightMatrix <- startInference()$network
+    }
+    if (! is.null(weightMatrix)) {
       melted_weights <- reshape2::melt(weightMatrix)
       names(melted_weights) <- c("From", "To", "value")
 
@@ -127,6 +155,40 @@ server <- function(input, output) {
       print(is_heatmap)
     }
   })
+
+  startAutomaticTuning <- eventReactive(eventExpr = input$tuneBtn, {
+    withProgress(message = 'Tuning Thresholds', value = 0, {
+
+      ugene <- dynUGENE::inferNetwork(inputData(),
+                             multipleExp = (input$multipleExp == 1),
+                             ntree = as.integer(input$ntree),
+                             mtry = as.integer(input$mtry),
+                             seed = as.integer(input$seed),
+                             showPlot = FALSE)
+
+      dynUGENE::tuneThreshold(inputData(), ugene)
+
+    })
+  })
+
+  output$stepPareto <- renderPlot({
+    if (! is.null(startAutomaticTuning)) {
+      plot(startAutomaticTuning()$stepErrors,
+           ylab = "Mean Squared Error", xlab = "Model Complexity")
+      title("Step-wise Pareto Front")
+      saveRDS(startAutomaticTuning()$stepMasks, "stepMasks.rds")
+    }
+  })
+
+  output$colPareto <- renderPlot({
+    if (! is.null(startAutomaticTuning)) {
+      plot(startAutomaticTuning()$colErrors,
+           ylab = "Mean Squared Error", xlab = "Model Complexity")
+      title("Column-wise Pareto Front")
+    }
+  })
+
+
 }
 
 # Run the app ----
