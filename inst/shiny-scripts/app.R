@@ -71,8 +71,14 @@ ui <- fluidPage(
 
       # tab switching for rintrojs adapted from
       # https://rdrr.io/github/carlganz/rintrojs/src/inst/examples/switchTabs.R
+      # colors from https://colorbrewer2.org/#type=diverging&scheme=PiYG&n=3
       tabsetPanel(type = "tabs",
                   tabPanel("Inferred Network",
+                           radioButtons(inputId = "selectedCol",
+                                        label = "Color palette",
+                                        choices = list("Blue-White-Red" = 1,
+                                                       "Green-White-Pink" = 2,
+                                                       "Purple-White-Orange" = 3), selected = 1),
                            plotOutput("networkMatrix")
                           ),
                   tabPanel("Simulation",
@@ -96,7 +102,14 @@ ui <- fluidPage(
                              data.intro = "Once you have an inferred network, you can simulate it! See
                                           ?simulateUGENE for details."
                            ),
-                           ggiraph::girafeOutput("simTraj")
+                           helpText("Drag out an area then double click to zoom in. Double click without
+                                    dragging to zoom out."),
+                           plotOutput("simTraj",
+                                      dblclick = "simTraj_dblclick",
+                                      brush = brushOpts(
+                                        id = "simTraj_brush",
+                                        resetOnNew = TRUE
+                                      ))
                           ),
                   tabPanel("Pareto Front",
                            introBox(
@@ -184,6 +197,11 @@ server <- function(input, output, session) {
     melted_weights <- reshape2::melt(weightMatrix)
     names(melted_weights) <- c("From", "To", "value")
 
+    myColors <- list(c("blue", "red", "white"),
+                      c("#a1d76a", "#e9a3c9", "#f7f7f7"),
+                      c("#998ec3", "#f1a340", "#f7f7f7"))
+    mcols <- myColors[[as.integer(input$selectedCol)]]
+
     # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
     # reverse ylim order from https://en.it1352.com/article/0d11e961264448d7a02766cb1802ad5e.html
     To <- melted_weights["To"]
@@ -193,7 +211,7 @@ server <- function(input, output, session) {
                                   ggplot2::aes(x = To, y = From, fill = value)) +
       ggplot2::geom_tile(color = "white")+
       ggplot2::ylim(rev(levels(melted_weights$From)))+
-      ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+      ggplot2::scale_fill_gradient2(low = mcols[1], high = mcols[2], mid = mcols[3],
                                     midpoint = 0.5, limit = c(0,1), space = "Lab",
                                     name = "Importance\nScore") +
       ggplot2::theme_minimal()
@@ -326,7 +344,9 @@ server <- function(input, output, session) {
     })
   })
 
-  output$simTraj <- ggiraph::renderGirafe({
+  ranges <- reactiveValues(x = NULL, y = NULL)
+
+  output$simTraj <- renderPlot({
     if (! is.null(startSimulation)) {
       simulation <- startSimulation()
       timeSteps <- simulation$t
@@ -337,18 +357,38 @@ server <- function(input, output, session) {
       dim(geneNames) <- c(ngenes, length(timeSteps))
       geneNames <- as.vector(unlist(t(geneNames)))
       simData <- data.frame(timeSteps, geneNames, Concentraton)
-      # code adapted from ggiraph ?geom_line_interactive example
-      gg <- ggplot2::ggplot(data=simData, ggplot2::aes(timeStepsCat, Concentraton,
-                                              colour = geneNames,
-                                              tooltip = geneNames,
-                                              data_id = geneNames,
-                                              hover_css = "fill:none;"))+
+      myplot <- ggplot2::ggplot(simData, ggplot2::aes(x = timeStepsCat,
+                                                      y = Concentraton))+
+        ggplot2::geom_line(ggplot2::aes(color = geneNames), size = 1)+
         ggplot2::xlab("Time Step") +
-        ggplot2::theme_minimal() + ggiraph::geom_line_interactive(size = .75)
-      x <- ggiraph::girafe(ggobj = gg)
-      x <- ggiraph::girafe_options(x = x,
-                              ggiraph::opts_hover(css = "stroke:red;fill:orange") )
-      return(x)
+        ggplot2::theme_minimal() +
+        ggplot2::coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
+      # code adapted from ggiraph ?geom_line_interactive example
+      # gg <- ggplot2::ggplot(data=simData, ggplot2::aes(timeStepsCat, Concentraton,
+      #                                         colour = geneNames,
+      #                                         tooltip = geneNames,
+      #                                         data_id = geneNames,
+      #                                         hover_css = "fill:none;"))+
+      #   ggplot2::xlab("Time Step") +
+      #   ggplot2::theme_minimal() +
+      #   ggplot2::coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
+      #   ggplot2::theme_minimal() + ggiraph::geom_line_interactive(size = .75)
+      # x <- ggiraph::girafe(ggobj = gg)
+      # x <- ggiraph::girafe_options(x = x,
+      #                         ggiraph::opts_hover(css = "stroke:red;fill:orange") )
+      print(myplot)
+    }
+  })
+
+  observeEvent(input$simTraj_dblclick, {
+    brush <- input$simTraj_brush
+    if (!is.null(brush)) {
+      ranges$x <- c(brush$xmin*100, brush$xmax*100)
+      ranges$y <- c(brush$ymin*100, brush$ymax*100)
+
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
     }
   })
 

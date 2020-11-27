@@ -68,8 +68,7 @@ following:
 
   - Visualize each of the stepwise-tuned networks
   - Select custom masks by clicking on the heatmap cells to be masked
-  - Interactive simulation plot allows the plotting of many trajectories
-    at once
+  - Interactive simulation plot allows zooming
 
 ## Overview
 
