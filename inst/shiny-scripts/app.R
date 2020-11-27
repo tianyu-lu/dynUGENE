@@ -1,7 +1,10 @@
 library(shiny)
+library(rintrojs)
 
 # Define UI ----
 ui <- fluidPage(
+  introjsUI(),
+
   titlePanel(img(src = "logo.PNG", height = 95, width = 300)),
 
   sidebarLayout(
@@ -12,87 +15,129 @@ ui <- fluidPage(
       tags$p("Upload your own dataset or choose an example dataset. Format for
              the dataset is provided in ", code("?inferNetwork")),
 
-      fileInput(inputId = "file1",
-                label = "Upload dataset:",
-                accept = c(".csv")),
-      selectInput(inputId = 'exampleData',
-                  label = 'Or choose example data:',
-                  choices = c("Repressilator",
-                              "Stochastic repressilator",
-                              "Hodgkin-Huxley",
-                              "Stochastic Hodgkin-Huxley",
-                              "SynTReN300")),
-      radioButtons(inputId = "multipleExp",
-                   label = "Multiple Experiments",
-                   choices = list("True" = 1, "False" = 2), selected = 2),
-      numericInput(inputId = "ntree",
-                   label = "Number of Trees",
-                   value = 10,
-                   min = 1, max = 1000),
-      numericInput(inputId = 'mtry',
-                   label = "Mtry",
-                   value = 3),
-      numericInput(inputId = 'seed',
-                   label = "Random Seed",
-                   value = 777),
-      radioButtons(inputId = "showScores",
-                   label = "Show Importance Scores",
-                   choices = list("True" = 1, "False" = 2), selected = 1),
+      actionButton(inputId = "tutorialBtn",
+                   label = "Click for Tutorial"),
+      br(),
+      introBox(
+        fileInput(inputId = "file1",
+                  label = "Upload dataset:",
+                  accept = c(".csv")),
+        selectInput(inputId = 'exampleData',
+                    label = 'Or choose example data:',
+                    choices = c("Repressilator",
+                                "Stochastic repressilator",
+                                "Hodgkin-Huxley",
+                                "Stochastic Hodgkin-Huxley",
+                                "SynTReN300")),
+        data.step = 1,
+        data.intro = "You can upload your own dataset or choose an example."
+      ),
+      introBox(
+        radioButtons(inputId = "multipleExp",
+                     label = "Multiple Experiments",
+                     choices = list("True" = 1, "False" = 2), selected = 2),
+        radioButtons(inputId = "steadyState",
+                     label = "Steady State",
+                     choices = list("True" = 1, "False" = 2), selected = 2),
+        numericInput(inputId = "ntree",
+                     label = "Number of Trees",
+                     value = 10,
+                     min = 1, max = 1000),
+        numericInput(inputId = 'mtry',
+                     label = "Mtry",
+                     value = 3),
+        numericInput(inputId = 'seed',
+                     label = "Random Seed",
+                     value = 777),
+        radioButtons(inputId = "showScores",
+                     label = "Show Importance Scores",
+                     choices = list("True" = 1, "False" = 2), selected = 1),
+        data.step = 2,
+        data.intro = "Parameters of inferNetwork when Steady State is False, and
+                      parameters of inferSSNetwork when Steady State is True.
+                      Refer to ?inferNetwork or ?inferSSNetwork for more details."
+      )
     ),
 
     mainPanel(
       wellPanel(
-        actionButton(inputId = "inferBtn",
-                     label = "Infer Network"),
-        actionButton(inputId = "tuneBtn",
-                     label = "Tune Threshold")
+        introBox(
+          actionButton(inputId = "inferBtn",
+                       label = "Infer Network"),
+          data.step = 3,
+          data.intro = "To infer a network, click here. The result will be saved
+                as ugene.rds and the weight matrix saved as weightMatrix.rds"),
       ),
 
+      # tab switching for rintrojs adapted from
+      # https://rdrr.io/github/carlganz/rintrojs/src/inst/examples/switchTabs.R
       tabsetPanel(type = "tabs",
                   tabPanel("Inferred Network",
                            plotOutput("networkMatrix")
                           ),
                   tabPanel("Simulation",
-                           textInput("x0input",
-                                     "Initial states",
-                                     placeholder = "Leave blank for dataset initial states"),
-                           helpText("If given, initial states should be numeric values separated by spaces."),
-                           numericInput("tend",
-                                        label = "Simulation length",
-                                        value = 100, min = 1, max = 500),
-                           numericInput("dt",
-                                        label = "Time step",
-                                        value = 0.1, min = 0.01, max = 1),
-                           radioButtons(inputId = "stochasticSim",
-                                        label = "Stochastic Simulation",
-                                        choices = list("True" = 1, "False" = 2), selected = 2),
-                           actionButton(inputId = "simulateBtn",
-                                        label = "Simulate"),
+                           introBox(
+                             textInput("x0input",
+                                       "Initial states",
+                                       placeholder = "Leave blank for dataset initial states"),
+                             helpText("If given, initial states should be numeric values separated by spaces."),
+                             numericInput("tend",
+                                          label = "Simulation length",
+                                          value = 100, min = 1, max = 500),
+                             numericInput("dt",
+                                          label = "Time step",
+                                          value = 0.1, min = 0.01, max = 1),
+                             radioButtons(inputId = "stochasticSim",
+                                          label = "Stochastic Simulation",
+                                          choices = list("True" = 1, "False" = 2), selected = 2),
+                             actionButton(inputId = "simulateBtn",
+                                          label = "Simulate"),
+                             data.step = 4,
+                             data.intro = "Once you have an inferred network, you can simulate it! See
+                                          ?simulateUGENE for details."
+                           ),
                            ggiraph::girafeOutput("simTraj")
                           ),
-                  tabPanel("Masked Network",
-                           numericInput(inputId = 'whichNetwork',
-                                        label = "Which network to show",
-                                        value = 1),
-                           actionButton(inputId = "updateNetwork",
-                                        label = "Show Masked Network"),
-                           plotOutput("maskedNetwork")
-                          ),
                   tabPanel("Pareto Front",
+                           introBox(
+                             actionButton(inputId = "tuneBtn",
+                                          label = "Tune Threshold"),
+                             data.step = 5,
+                             data.intro = "The default network has all possible node-node interactions, which
+                                  isn't biologically realistic. Here you can tune the threshold of the
+                                  network's importance scores, removing connections with scores below the threshold."
+                           ),
                            fluidRow(
                              splitLayout(cellWidths = c("50%", "50%"),
                                          plotOutput('stepPareto'),
                                          plotOutput('colPareto')))
+                  ),
+                  tabPanel("Masked Network",
+                           introBox(
+                             numericInput(inputId = 'whichNetwork',
+                                          label = "Which network to show",
+                                          value = 1),
+                             actionButton(inputId = "updateNetwork",
+                                          label = "Show Masked Network"),
+                             data.step = 6,
+                             data.intro = "You can visualize the tuned networks in the previous step one at a time."
+                           ),
+                           plotOutput("maskedNetwork")
                           ),
                   # adapted from http://shiny.rstudio-staging.com/reference/shiny/0.12.0/imageOutput.html
                   tabPanel("Custom Tuning",
                            imageOutput("image",
                                        click = "image_click"
                            ),
-                           h4("Selected edges to mask:"),
-                           verbatimTextOutput("image_clickinfo"),
-                           wellPanel(actionButton("resetMasks", "Reset Masks"),
-                                     actionButton("customBtn", "Start tuning")),
+                           introBox(
+                             h4("Selected edges to mask:"),
+                             verbatimTextOutput("image_clickinfo"),
+                             wellPanel(actionButton("resetMasks", "Reset Masks"),
+                                       actionButton("customBtn", "Start tuning")),
+                             data.step = 7,
+                             data.intro = "Finally, you can mask out a custom selection of connections by clicking
+                                        on the grid of the connection. You will see it show up in the selected edges."
+                           ),
                            plotOutput("customNetwork"))
                   )
       )
@@ -101,6 +146,14 @@ ui <- fluidPage(
 
 # Define server logic ----
 server <- function(input, output, session) {
+
+  # start introjs when button is pressed with custom options and events
+  observeEvent(input$tutorialBtn,
+               introjs(session,
+                       events = list("oncomplete"=I('alert("Happy fitting!")'),
+                                     onbeforechange = readCallback("switchTabs")))
+  )
+
   # save input csv as a reactive
   inputData <- reactive({
     if (! is.null(input$file1))
@@ -119,6 +172,8 @@ server <- function(input, output, session) {
       dynUGENE::HodgkinHuxley
     } else if (input$exampleData == 'Stochastic Hodgkin-Huxley'){
       dynUGENE::StochasticHodgkinHuxley
+    } else if (input$exampleData == 'SynTReN300'){
+      grndata::syntren300.data
     }
   })
 
@@ -154,14 +209,20 @@ server <- function(input, output, session) {
       if (file.exists("currMask.rds")) {
         file.remove("currMask.rds")
       }
-
-      dynUGENE::inferNetwork(inputData(),
-                             multipleExp = (input$multipleExp == 1),
-                             ntree = as.integer(input$ntree),
-                             mtry = as.integer(input$mtry),
-                             seed = as.integer(input$seed),
-                             showPlot = FALSE)
-
+      if (input$steadyState == 1) {
+        dynUGENE::inferSSNetwork(inputData(),
+                                 ntree = as.integer(input$ntree),
+                                 mtry = as.integer(input$mtry),
+                                 seed = as.integer(input$seed),
+                                 showPlot = FALSE)
+      } else {
+        dynUGENE::inferNetwork(inputData(),
+                               multipleExp = (input$multipleExp == 1),
+                               ntree = as.integer(input$ntree),
+                               mtry = as.integer(input$mtry),
+                               seed = as.integer(input$seed),
+                               showPlot = FALSE)
+      }
     })
   })
 
@@ -202,17 +263,18 @@ server <- function(input, output, session) {
     })
   })
 
-  output$customNetwork <- renderPlot({
-    if (! is.null(startCustomTuning)) {
-      ugene <- startCustomTuning()
-      plotHeatmap(ugene)
-    }
-  })
-
   output$networkMatrix <- renderPlot({
     if (! is.null(startInference)) {
       ugene <- startInference()
-      plotHeatmap(ugene)
+      if (input$steadyState == 1) {
+        myCols <- colorRampPalette(c("#000000", "#ff0000"))(dim(ugene$network)[1])
+        gplots::heatmap.2(ugene$network,
+                          trace = "none", col = myCols, dendrogram = 'none',
+                          ylab = "From", xlab = "To", margins = c(2, 2),
+                          labRow = FALSE, labCol = FALSE)
+      } else {
+        plotHeatmap(ugene)
+      }
     }
   })
 
@@ -220,6 +282,21 @@ server <- function(input, output, session) {
     if (! is.null(startUpdate)) {
       ugene <- startUpdate()
       plotHeatmap(ugene)
+    }
+  })
+
+  output$customNetwork <- renderPlot({
+    if (! is.null(startCustomTuning)) {
+      ugene <- startCustomTuning()
+      if (input$steadyState == 1) {
+        myCols <- colorRampPalette(c("#000000", "#ff0000"))(dim(ugene$network)[1])
+        gplots::heatmap.2(ugene$network,
+                          trace = "none", col = myCols, dendrogram = 'none',
+                          ylab = "From", xlab = "To", margins = c(2, 2),
+                          labRow = FALSE, labCol = FALSE)
+      } else {
+        plotHeatmap(ugene)
+      }
     }
   })
 

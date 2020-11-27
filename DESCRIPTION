@@ -21,7 +21,9 @@ Imports:
     RColorBrewer, 
     gplots, 
     grndata, 
-    shiny
+    shiny,
+    ggiraph,
+    rintrojs
 Suggests: 
     testthat,
     knitr,
