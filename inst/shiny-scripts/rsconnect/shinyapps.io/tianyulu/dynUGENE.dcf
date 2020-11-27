@@ -1,0 +1,12 @@
+name: dynUGENE
+title: dynUGENE
+username:
+account: tianyulu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3308915
+bundleId: 3911238
+url: https://tianyulu.shinyapps.io/dynUGENE/
+when: 1606451984.34008
+asMultiple: FALSE
+asStatic: FALSE

@@ -52,6 +52,18 @@ devtools::install_github("tianyu-lu/dynUGENE", build_vignettes = TRUE)
 library("dynUGENE")
 ```
 
+The package is also available as a Shiny app on at [tianyulu.shinyapps.io/dynUGENE/](https://tianyulu.shinyapps.io/dynUGENE/) or can be run locally with
+
+```r
+dynUGENE::rundynUGENE()
+```
+
+The Shiny app includes a tutorial and interactivity with the outputs of dynUGENE. In particular, useful features of the app include the following:
+
+ * Visualize each of the stepwise-tuned networks
+ * Select custom masks by clicking on the heatmap cells to be masked
+ * Interactive simulation plot allows the plotting of many trajectories at once
+
 ## Overview
 
 ```{r Overview}

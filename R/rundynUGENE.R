@@ -1,6 +1,7 @@
 #' Launch Shiny App For dynUGENE
 #'
-#' The shiny app allows
+#' The shiny app allows users to upload their own data as a .csv file for
+#' network inference, simulation, and tuning.
 #'
 #' @return No return value. Opens the dynUGENE Shiny app.
 #'
