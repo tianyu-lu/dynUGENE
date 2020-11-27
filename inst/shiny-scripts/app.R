@@ -75,7 +75,7 @@ ui <- fluidPage(
                                         label = "Which network to show",
                                         value = 1),
                            actionButton(inputId = "updateNetwork",
-                                        label = "Update Network"),
+                                        label = "Show Masked Network"),
                            plotOutput("maskedNetwork")
                           ),
                   tabPanel("Pareto Front",
@@ -86,12 +86,14 @@ ui <- fluidPage(
                           ),
                   # adapted from http://shiny.rstudio-staging.com/reference/shiny/0.12.0/imageOutput.html
                   tabPanel("Custom Tuning",
-                           imageOutput("image", height=300,
+                           imageOutput("image",
                                        click = "image_click"
                            ),
                            h4("Selected edges to mask:"),
                            verbatimTextOutput("image_clickinfo"),
-                           wellPanel(actionButton("resetMasks", "Reset Masks")))
+                           wellPanel(actionButton("resetMasks", "Reset Masks"),
+                                     actionButton("customBtn", "Start tuning")),
+                           plotOutput("customNetwork"))
                   )
       )
     )
@@ -120,9 +122,38 @@ server <- function(input, output, session) {
     }
   })
 
+  plotHeatmap <- function(ugene) {
+    weightMatrix <- ugene$network
+    saveRDS(weightMatrix, "weightMatrix.rds")
+    saveRDS(ugene, "ugene.rds")
+    melted_weights <- reshape2::melt(weightMatrix)
+    names(melted_weights) <- c("From", "To", "value")
+
+    # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
+    # reverse ylim order from https://en.it1352.com/article/0d11e961264448d7a02766cb1802ad5e.html
+    To <- melted_weights["To"]
+    From <- melted_weights["From"]
+    value <- melted_weights["value"]
+    is_heatmap <- ggplot2::ggplot(data = melted_weights,
+                                  ggplot2::aes(x = To, y = From, fill = value)) +
+      ggplot2::geom_tile(color = "white")+
+      ggplot2::ylim(rev(levels(melted_weights$From)))+
+      ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                                    midpoint = 0.5, limit = c(0,1), space = "Lab",
+                                    name = "Importance\nScore") +
+      ggplot2::theme_minimal()
+    if (input$showScores == 1){
+      is_heatmap <- is_heatmap +
+        ggplot2::geom_text(ggplot2::aes(To, From, label = value), color = "black", size = 4)
+    }
+    print(is_heatmap)
+  }
+
   startInference <- eventReactive(eventExpr = input$inferBtn, {
     withProgress(message = 'Inferring Network', value = 0, {
-      # Number of times we'll go through the loop
+      if (file.exists("currMask.rds")) {
+        file.remove("currMask.rds")
+      }
 
       dynUGENE::inferNetwork(inputData(),
                              multipleExp = (input$multipleExp == 1),
@@ -138,6 +169,7 @@ server <- function(input, output, session) {
     withProgress(message = 'Inferring Masked Network', value = 0, {
       masks <- readRDS("stepMasks.rds")
       mask <- masks[[input$whichNetwork]]
+      saveRDS(mask, "currMask.rds")
 
       dynUGENE::inferNetwork(inputData(),
                              multipleExp = (input$multipleExp == 1),
@@ -149,31 +181,45 @@ server <- function(input, output, session) {
     })
   })
 
+  startCustomTuning <- eventReactive(eventExpr = input$customBtn, {
+    withProgress(message = 'Custom tuning', value = 0, {
+      if (length(selectedFrom) == 0) {
+        stop("Must select some nodes to mask before tuning")
+      } else {
+        mask <- matrix(data = 1, nrow = ngenes, ncol = ngenes)
+        for (i in 1:length(selectedFrom)) {
+          mask[selectedFrom[i], selectedTo[i]] <- NA
+        }
+        saveRDS(mask, "currMask.rds")
+        dynUGENE::inferNetwork(inputData(),
+                               multipleExp = (input$multipleExp == 1),
+                               ntree = as.integer(input$ntree),
+                               mtry = as.integer(input$mtry),
+                               seed = as.integer(input$seed),
+                               showPlot = FALSE,
+                               mask = mask)
+      }
+    })
+  })
+
+  output$customNetwork <- renderPlot({
+    if (! is.null(startCustomTuning)) {
+      ugene <- startCustomTuning()
+      plotHeatmap(ugene)
+    }
+  })
+
   output$networkMatrix <- renderPlot({
     if (! is.null(startInference)) {
       ugene <- startInference()
-      weightMatrix <- ugene$network
-      saveRDS(weightMatrix, "weightMatrix.rds")
-      saveRDS(ugene, "ugene.rds")
-      melted_weights <- reshape2::melt(weightMatrix)
-      names(melted_weights) <- c("From", "To", "value")
+      plotHeatmap(ugene)
+    }
+  })
 
-      # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
-      To <- melted_weights["To"]
-      From <- melted_weights["From"]
-      value <- melted_weights["value"]
-      is_heatmap <- ggplot2::ggplot(data = melted_weights,
-                                    ggplot2::aes(x = To, y = From, fill = value)) +
-        ggplot2::geom_tile(color = "white")+
-        ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
-                                      midpoint = 0.5, limit = c(0,1), space = "Lab",
-                                      name = "Importance\nScore") +
-        ggplot2::theme_minimal()
-      if (input$showScores == 1){
-        is_heatmap <- is_heatmap +
-          ggplot2::geom_text(ggplot2::aes(To, From, label = value), color = "black", size = 4)
-      }
-      print(is_heatmap)
+  output$maskedNetwork <- renderPlot({
+    if (! is.null(startUpdate)) {
+      ugene <- startUpdate()
+      plotHeatmap(ugene)
     }
   })
 
@@ -187,10 +233,19 @@ server <- function(input, output, session) {
       } else {
         x0 <- as.numeric(strsplit(input$x0input, split = " "))
       }
-      dynUGENE::simulateUGENE(ugene, x0,
-                              tend = as.numeric(input$tend),
-                              dt = as.numeric(input$dt),
-                              stochastic = (input$stochasticSim == 1))
+      if (file.exists("currMask.rds")) {
+        mask <- readRDS("currMask.rds")
+        dynUGENE::simulateUGENE(ugene, x0,
+                                tend = as.numeric(input$tend),
+                                dt = as.numeric(input$dt),
+                                stochastic = (input$stochasticSim == 1),
+                                mask = mask)
+      } else {
+        dynUGENE::simulateUGENE(ugene, x0,
+                                tend = as.numeric(input$tend),
+                                dt = as.numeric(input$dt),
+                                stochastic = (input$stochasticSim == 1))
+      }
     })
   })
 
@@ -206,7 +261,7 @@ server <- function(input, output, session) {
       geneNames <- as.vector(unlist(t(geneNames)))
       simData <- data.frame(timeSteps, geneNames, Concentraton)
       # code adapted from ggiraph ?geom_line_interactive example
-      gg <- ggplot2::ggplot(data=simData, aes(timeStepsCat, Concentraton,
+      gg <- ggplot2::ggplot(data=simData, ggplot2::aes(timeStepsCat, Concentraton,
                                               colour = geneNames,
                                               tooltip = geneNames,
                                               data_id = geneNames,
@@ -217,33 +272,6 @@ server <- function(input, output, session) {
       x <- ggiraph::girafe_options(x = x,
                               ggiraph::opts_hover(css = "stroke:red;fill:orange") )
       return(x)
-    }
-  })
-
-  output$maskedNetwork <- renderPlot({
-    if (! is.null(startUpdate)) {
-      ugene <- startUpdate()
-      saveRDS(ugene, "ugene.rds")
-      weightMatrix <- ugene$network
-      melted_weights <- reshape2::melt(weightMatrix)
-      names(melted_weights) <- c("From", "To", "value")
-
-      # from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
-      To <- melted_weights["To"]
-      From <- melted_weights["From"]
-      value <- melted_weights["value"]
-      is_heatmap <- ggplot2::ggplot(data = melted_weights,
-                                    ggplot2::aes(x = To, y = From, fill = value)) +
-        ggplot2::geom_tile(color = "white")+
-        ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
-                                      midpoint = 0.5, limit = c(0,1), space = "Lab",
-                                      name = "Importance\nScore") +
-        ggplot2::theme_minimal()
-      if (input$showScores == 1){
-        is_heatmap <- is_heatmap +
-          ggplot2::geom_text(ggplot2::aes(To, From, label = value), color = "black", size = 4)
-      }
-      print(is_heatmap)
     }
   })
 
