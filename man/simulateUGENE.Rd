@@ -38,7 +38,7 @@ network given the learned random forests for each node.
 \examples{
 \dontrun{
   # deterministic
-  x0 <- Repressilator[1, 2:7]
+  x0 <- dynUGENE::Repressilator[1, 2:7]
   ugene <- inferNetwork(Repressilator, mtry = 3L)
   trajectory <- simulateUGENE(ugene, x0)
   plotTrajectory(trajectory, c("p3", "p2", "p1"))

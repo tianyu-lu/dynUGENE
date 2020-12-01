@@ -12,9 +12,9 @@ tuneThreshold(data, ugene, cutoffs = NULL, showPareto = TRUE)
 \item{ugene}{Required. Output of the inferNetwork() function.}
 
 \item{cutoffs}{Optional. When not provided, edges are removed in two ways. Both
-cases start with a sparse network, one that has at least one
-connection/edge per column of the network matrix. This ensures that for each
-node, at least one node is used as input to the model.
+   cases start with a sparse network, one that has at least one
+   connection/edge per column of the network matrix. This ensures that for each
+   node, at least one node is used as input to the model.
 \itemize{
     \item Column-wise: The sparsest network is that with the maximum of each
     column as its only connections. Edges are incrementally added
@@ -26,10 +26,10 @@ node, at least one node is used as input to the model.
     Edges are incrementally added by including edges with the
     next highest importance score over the entire matrix..
 }
-If provided, the cutoffs should be a vector of double numerics between
-0 and 1 exclusive. For each cutoff, all connections in the learned network
-with values below the cutoff will be masked. If the result of the mask happens
-to remove an entire column of the network matrix, there will be an error.}
+   If provided, the cutoffs should be a vector of double numerics between
+   0 and 1 exclusive. For each cutoff, all connections in the learned network
+   with values below the cutoff will be masked. If the result of the mask happens
+   to remove an entire column of the network matrix, there will be an error.}
 
 \item{showPareto}{Optional. If TRUE (default), shows a plot of the mean
 squared residual error of the fitted random forests for all nodes, versus the

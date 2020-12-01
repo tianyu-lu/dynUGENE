@@ -15,8 +15,9 @@ inferSSNetwork(
 )
 }
 \arguments{
-\item{data}{A data.frame of gene expression values. Rows are different experiments.
-Columns names are gene names.}
+\item{data}{A data.frame of gene expression values, should be numerics.
+Each row is a different measurement at steady state. Each column corresponds
+to one gene.}
 
 \item{mask}{A matrix which only includes the values 1 or NA. Must be of size
 numgenes*numgenes. If entry \eqn{(i.j) = 1}, then \eqn{i} can be used in predicting

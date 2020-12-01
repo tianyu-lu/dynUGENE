@@ -7,7 +7,8 @@
 estimateDecayRates(data)
 }
 \arguments{
-\item{data}{The data.frame provided as input to inferNetwork().}
+\item{data}{The data.frame provided as input to inferNetwork(). Refer to the
+data parameter in inferNetwork() for more details.}
 }
 \value{
 Returns a vector of estimated decay rates for each gene.
@@ -18,6 +19,12 @@ For each gene, the decay rate is estimated by assuming that the gene expression
 x(t) follows: x(t) =  A exp(-alpha * t) + cMin,
 between the highest and lowest expression values.
 cMin is set to the minimum expression value over all genes and all samples.
+}
+\examples{
+\dontrun{
+alphas <- estimateDecayRates(Repressilator)
+}
+
 }
 \references{
 Geurts, P. (2018). dynGENIE3: dynamical GENIE3 for the inference of

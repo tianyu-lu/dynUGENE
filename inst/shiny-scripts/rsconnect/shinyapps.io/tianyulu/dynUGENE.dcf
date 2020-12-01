@@ -5,8 +5,8 @@ account: tianyulu
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3308915
-bundleId: 3913780
+bundleId: 3929259
 url: https://tianyulu.shinyapps.io/dynUGENE/
-when: 1606507641.75139
+when: 1606853017.48467
 asMultiple: FALSE
 asStatic: FALSE

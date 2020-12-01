@@ -12,11 +12,13 @@ ui <- fluidPage(
       tags$p("Given a timeseries or steady state dataset of gene expression
              values, infers its regulatory network with options to tune model
              complexity and simulate the model."),
-      tags$p("Upload your own dataset or choose an example dataset. Format for
-             the dataset is provided in ", code("?inferNetwork")),
+      tags$p("Upload your own dataset or choose an example dataset. Multiple
+      experiments must be set to True for the stochastic repressilator dataset.
+      Format for the dataset is provided in ", code("?inferNetwork")),
 
       actionButton(inputId = "tutorialBtn",
                    label = "Click for Tutorial"),
+      br(),
       br(),
       introBox(
         fileInput(inputId = "file1",
@@ -25,7 +27,7 @@ ui <- fluidPage(
         selectInput(inputId = 'exampleData',
                     label = 'Or choose example data:',
                     choices = c("Repressilator",
-                                "Stochastic repressilator",
+                                "Stochastic Repressilator",
                                 "Hodgkin-Huxley",
                                 "Stochastic Hodgkin-Huxley",
                                 "SynTReN300")),
@@ -96,20 +98,25 @@ ui <- fluidPage(
                              radioButtons(inputId = "stochasticSim",
                                           label = "Stochastic Simulation",
                                           choices = list("True" = 1, "False" = 2), selected = 2),
-                             actionButton(inputId = "simulateBtn",
-                                          label = "Simulate"),
                              data.step = 4,
                              data.intro = "Once you have an inferred network, you can simulate it! See
                                           ?simulateUGENE for details."
                            ),
-                           helpText("Drag out an area then double click to zoom in. Double click without
-                                    dragging to zoom out."),
-                           plotOutput("simTraj",
-                                      dblclick = "simTraj_dblclick",
-                                      brush = brushOpts(
-                                        id = "simTraj_brush",
-                                        resetOnNew = TRUE
-                                      ))
+                           helpText("Leave blank for default"),
+                           numericInput(inputId = "xmin", label = "X min", value = NA),
+                           numericInput(inputId = "xmax", label = "X max", value = NA),
+                           numericInput(inputId = "ymin", label = "Y min", value = NA),
+                           numericInput(inputId = "ymax", label = "Y max", value = NA),
+                           actionButton(inputId = "simulateBtn",
+                                        label = "Simulate"),
+                           br(),
+                           br(),
+                           plotOutput("simTraj")
+                                      # dblclick = "simTraj_dblclick",
+                                      # brush = brushOpts(
+                                      #   id = "simTraj_brush",
+                                      #   resetOnNew = TRUE
+                                      # ))
                           ),
                   tabPanel("Pareto Front",
                            introBox(
@@ -145,7 +152,7 @@ ui <- fluidPage(
                            introBox(
                              h4("Selected edges to mask:"),
                              verbatimTextOutput("image_clickinfo"),
-                             wellPanel(actionButton("resetMasks", "Reset Masks"),
+                             wellPanel(actionButton("resetMasks", "Refresh"),
                                        actionButton("customBtn", "Start tuning")),
                              data.step = 7,
                              data.intro = "Finally, you can mask out a custom selection of connections by clicking
@@ -344,7 +351,7 @@ server <- function(input, output, session) {
     })
   })
 
-  ranges <- reactiveValues(x = NULL, y = NULL)
+  # ranges <- reactiveValues(x = NULL, y = NULL)
 
   output$simTraj <- renderPlot({
     if (! is.null(startSimulation)) {
@@ -361,8 +368,14 @@ server <- function(input, output, session) {
                                                       y = Concentraton))+
         ggplot2::geom_line(ggplot2::aes(color = geneNames), size = 1)+
         ggplot2::xlab("Time Step") +
-        ggplot2::theme_minimal() +
-        ggplot2::coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
+        ggplot2::ggtitle("Simulated Trajectory") +
+        ggplot2::theme_minimal()
+      if (any(! is.na(c(input$xmin, input$xmax,
+                        input$ymin, input$ymax)))){
+        myplot <- myplot + ggplot2::coord_cartesian(xlim = c(input$xmin, input$xmax),
+                                                    ylim = c(input$ymin, input$ymax), expand = FALSE)
+      }
+
       # code adapted from ggiraph ?geom_line_interactive example
       # gg <- ggplot2::ggplot(data=simData, ggplot2::aes(timeStepsCat, Concentraton,
       #                                         colour = geneNames,
@@ -380,17 +393,17 @@ server <- function(input, output, session) {
     }
   })
 
-  observeEvent(input$simTraj_dblclick, {
-    brush <- input$simTraj_brush
-    if (!is.null(brush)) {
-      ranges$x <- c(brush$xmin*100, brush$xmax*100)
-      ranges$y <- c(brush$ymin*100, brush$ymax*100)
-
-    } else {
-      ranges$x <- NULL
-      ranges$y <- NULL
-    }
-  })
+  # observeEvent(input$simTraj_dblclick, {
+  #   brush <- input$simTraj_brush
+  #   if (!is.null(brush)) {
+  #     ranges$x <- c(brush$xmin*100, brush$xmax*100)
+  #     ranges$y <- c(brush$ymin*100, brush$ymax*100)
+  #
+  #   } else {
+  #     ranges$x <- NULL
+  #     ranges$y <- NULL
+  #   }
+  # })
 
   startAutomaticTuning <- eventReactive(eventExpr = input$tuneBtn, {
     withProgress(message = 'Tuning Thresholds', value = 0, {
@@ -444,10 +457,17 @@ server <- function(input, output, session) {
     To <- melted_weights["To"]
     From <- melted_weights["From"]
     value <- melted_weights["value"]
+
+    myColors <- list(c("blue", "red", "white"),
+                     c("#a1d76a", "#e9a3c9", "#f7f7f7"),
+                     c("#998ec3", "#f1a340", "#f7f7f7"))
+    mcols <- myColors[[as.integer(input$selectedCol)]]
+
     myplot = ggplot2::ggplot(data = melted_weights,
                              ggplot2::aes(x = To, y = From, fill = value)) +
       ggplot2::geom_tile(color = "white", show.legend = FALSE)+
-      ggplot2::scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+      ggplot2::ylim(rev(levels(melted_weights$From)))+
+      ggplot2::scale_fill_gradient2(low = mcols[1], high = mcols[2], mid = mcols[3],
                                     midpoint = 0.5, limit = c(0,1), space = "Lab",
                                     name = "Importance\nScore") +
       ggplot2::geom_text(ggplot2::aes(To, From, label = value), color = "black", size = 4)+

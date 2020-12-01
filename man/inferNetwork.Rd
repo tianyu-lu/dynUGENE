@@ -17,9 +17,10 @@ inferNetwork(
 )
 }
 \arguments{
-\item{data}{A data.frame of gene expression values. Row names are optional.
-First column is the time stamps. Time stamps do not need to be regularly spaced.
-Subsequent columns are the gene concentrations
+\item{data}{A data.frame of gene expression values, should be numerics. Each
+row is a measurement of all genes in the system at the indicated time point
+given in the first column entry of that row. Time stamps do not need to be
+regularly spaced. Subsequent columns are the gene concentrations
 measured at the corresponding time stamps.
 If multiple time series are included, they must be concatenated as new rows,
 where the first time stamp for the new experiment is less than the last
