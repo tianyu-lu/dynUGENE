@@ -72,23 +72,9 @@ ls("package:dynUGENE")
 data(package="dynUGENE")
 ```
 
-We can learn the architecture and simulate the dynamics of a repressilator with `inferNetwork()`:
+The package file structure is illustrated below.
 
-![](inst/extdata/rep-network.png){width=50%}
-![](inst/extdata/rep-simulation.png){width=50%}
-
-We can perform a search over possible sparse network architectures with `tuneThreshold()`. 
-
-![Sparsest possible network architecture](inst/extdata/rep-sparse.png){width=50%}
-![Step 7 from step-wise search of architectures](inst/extdata/rep-network-from-mask7.png){width=50%}
-
-We can also learn the dynamics of a stochastic repressilator:
-
-![](inst/extdata/rep-stochastic-trajectory.png){width=70%}
-
-We can also visualize the learned networks for large, steady-state datasets:
-
-![A section of the 300x300 gene regulatory network in SynTReN300](inst/extdata/syntren-zoom.png){width=70%}
+![](inst/extdata/dynUGENE.png){width=100%}
 
 For detailed tutorials and descriptions of the provided datasets, see the vignette here:
 
@@ -118,56 +104,82 @@ Sources for code adapted from examples are provided near the code in question.
 
 [Mangan, N. M., Brunton, S. L., Proctor, J. L., & Kutz, J. N. (2016). Inferring biological networks by sparse identification of nonlinear dynamics. _IEEE Transactions on Molecular, Biological and Multi-Scale Communications_, 2(1), 52-63.](https://ieeexplore.ieee.org/abstract/document/7809160)
 
-Hadley Wickham, Peter Danenberg, Gábor Csárdi and Manuel Eugster
-  (2020). roxygen2: In-Line Documentation for R. _R package_ version
-  7.1.1. https://CRAN.R-project.org/package=roxygen2
-  
-Hadley Wickham, Jim Hester and Winston Chang (2020). devtools: Tools
-  to Make Developing R Packages Easier. _R package_ version 2.3.2.
-  https://CRAN.R-project.org/package=devtools
-  
-Hadley Wickham. testthat: Get Started with Testing. _The R Journal_,
-  vol. 3, no. 1, pp. 5--10, 2011
-  
-Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report
-  Generation in R. _R package_ version 1.30.
-  
-Hadley Wickham and Jennifer Bryan (2020). usethis: Automate Package
-  and Project Setup. _R package_ version 1.6.3.
-  https://CRAN.R-project.org/package=usethis
-  
 A. Liaw and M. Wiener (2002). Classification and Regression by
   randomForest. _R News_ 2(3), 18--22.
   
-R Core Team (2020). R: A language and environment for statistical
-  computing. _R Foundation for Statistical Computing_, Vienna, Austria.
-  URL https://www.R-project.org/.
-  
-Hadley Wickham (2007). Reshaping Data with the reshape Package.
-  _Journal of Statistical Software_, 21(12), 1-20. URL
-  http://www.jstatsoft.org/v21/i12/.
-  
-H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
-  _Springer-Verlag New York_, 2016.
+BioRender. (2020). Image created by Lu, T. Retrieved December 2, 2020, from
+  https://app.biorender.com/
   
 Brandon Greenwell (2016). ramify: Additional Matrix Functionality. _R
   package_ version 0.3.3. https://CRAN.R-project.org/package=ramify
   
+Brewer, C., Harrower, M., Sheesley, B., Woodruff, A., &amp; Heyman, D. (2020).
+  Colorbrewer 2.0. Retrieved December 02, 2020, from https://colorbrewer2.org/
+  
+Carl Ganz (2016). rintrojs: A Wrapper for the Intro.js Library. Journal
+  of Open Source Software, 1(6), October 2016. URL
+  http://dx.doi.org/10.21105/joss.00063  
+  
 Erich Neuwirth (2014). RColorBrewer: ColorBrewer Palettes. _R package_
   version 1.1-2. https://CRAN.R-project.org/package=RColorBrewer
+ 
+Ggplot2 : Quick correlation matrix heatmap - R software and data visualization.
+  (2020). Retrieved December 02, 2020, from
+  http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
   
 Gregory R. Warnes, Ben Bolker, Lodewijk Bonebakker, Robert Gentleman,
   Wolfgang Huber, Andy Liaw, Thomas Lumley, Martin Maechler, Arni
   Magnusson, Steffen Moeller, Marc Schwartz and Bill Venables (2020).
   gplots: Various R Programming Tools for Plotting Data. _R package_
   version 3.1.0. https://CRAN.R-project.org/package=gplots
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  _Springer-Verlag New York_, 2016.
+
+Hadley Wickham and Jennifer Bryan (2020). usethis: Automate Package
+  and Project Setup. _R package_ version 1.6.3.
+  https://CRAN.R-project.org/package=usethis
+
+Hadley Wickham, Jim Hester and Winston Chang (2020). devtools: Tools
+  to Make Developing R Packages Easier. _R package_ version 2.3.2.
+  https://CRAN.R-project.org/package=devtools
+
+Hadley Wickham, Peter Danenberg, Gábor Csárdi and Manuel Eugster
+  (2020). roxygen2: In-Line Documentation for R. _R package_ version
+  7.1.1. https://CRAN.R-project.org/package=roxygen2
   
-Wickham, H. and Bryan, J. (2019). R Packages (2nd edition). Newton, Massachusetts: O’Reilly Media.
+Hadley Wickham (2007). Reshaping Data with the reshape Package.
+  _Journal of Statistical Software_, 21(12), 1-20. URL
+  http://www.jstatsoft.org/v21/i12/.
 
-Rackauckas, C., & Nie, Q. (2017). Differentialequations. jl–a performant and feature-rich ecosystem for solving differential equations in julia. _Journal of Open Research Software_, 5(1).
+Hadley Wickham. testthat: Get Started with Testing. _The R Journal_,
+  vol. 3, no. 1, pp. 5--10, 2011
+  
+R Core Team (2020). R: A language and environment for statistical
+  computing. _R Foundation for Statistical Computing_, Vienna, Austria.
+  URL https://www.R-project.org/.  
+  
+Rackauckas, C., & Nie, Q. (2017). Adaptive methods for stochastic differential
+  equations via natural embeddings and rejection sampling with memory. 
+  _Discrete and continuous dynamical systems_. Series B, 22(7), 2731.
 
-Rackauckas, C., & Nie, Q. (2017). Adaptive methods for stochastic differential equations via natural embeddings and rejection sampling with memory. _Discrete and continuous dynamical systems_. Series B, 22(7), 2731.
+Rackauckas, C., & Nie, Q. (2017). Differentialequations. jl–a performant and
+  feature-rich ecosystem for solving differential equations in julia.
+  _Journal of Open Research Software_, 5(1).
 
+Silva, A. (2020) TestingPackage: An Example R Package For BCB410H. Unpublished.
+  URL https://github.com/anjalisilva/TestingPackage
+
+Wickham, H. and Bryan, J. (2019). R Packages (2nd edition). Newton,
+  Massachusetts: O’Reilly Media.
+  
+Winston Chang, Joe Cheng, JJ Allaire, Yihui Xie and Jonathan McPherson
+  (2020). shiny: Web Application Framework for R. R package version
+  1.5.0. https://CRAN.R-project.org/package=shiny
+
+Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report
+  Generation in R. _R package_ version 1.30.
+  
 
 ## Acknowledgements
 
@@ -175,7 +187,25 @@ This package was developed as part of an assessment for 2020 BCB410H: Applied Bi
 
 Logo made with [Wix](https://www.wix.com/logo/maker).
 
-## Example
+## Functionality
+
+We can learn the architecture and simulate the dynamics of a repressilator with `inferNetwork()`:
+
+![](inst/extdata/rep-network.png){width=50%}
+![](inst/extdata/rep-simulation.png){width=50%}
+
+We can perform a search over possible sparse network architectures with `tuneThreshold()`. 
+
+![Sparsest possible network architecture](inst/extdata/rep-sparse.png){width=55%}
+![Step 7 from step-wise search of architectures](inst/extdata/rep-network-from-mask7.png){width=45%}
+
+We can also learn the dynamics of a stochastic repressilator:
+
+![](inst/extdata/rep-stochastic-trajectory.png){width=70%}
+
+We can also visualize the learned networks for large, steady-state datasets:
+
+![A section of the 300x300 gene regulatory network in SynTReN300](inst/extdata/syntren-zoom.png){width=70%}
 
 Load and do inference with repressilator data:
 

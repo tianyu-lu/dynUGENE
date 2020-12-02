@@ -1,6 +1,6 @@
 Package: dynUGENE
 Type: Package
-Title: Dynamic Uncertainty-Aware Gene Network Inference with Ensembles of Trees
+Title: Dynamical Uncertainty-aware GEne NEtwork inference with random forests
 Version: 0.1.0
 Authors@R: person("T", "Lu", email = "tianyu.lu@mail.utoronto.ca", role = c("aut", "cre"))
 Maintainer: Tianyu Lu <tianyu.lu@mail.utoronto.ca>
@@ -12,6 +12,8 @@ LazyData: true
 RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
+biocViews:
+Remotes: github::hadley/ggplot2
 Imports:
     stats, 
     randomForest, 
@@ -29,3 +31,5 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/tianyu-lu/dynUGENE
+BugReports: https://github.com/tianyu-lu/dynUGENE/issues
