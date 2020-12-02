@@ -200,6 +200,8 @@ server <- function(input, output, session) {
   plotHeatmap <- function(ugene) {
     weightMatrix <- ugene$network
     saveRDS(weightMatrix, "weightMatrix.rds")
+    ngenes <<- dim(weightMatrix)[1]
+    selNames <<- rownames(weightMatrix)
     saveRDS(ugene, "ugene.rds")
     melted_weights <- reshape2::melt(weightMatrix)
     names(melted_weights) <- c("From", "To", "value")
@@ -449,7 +451,6 @@ server <- function(input, output, session) {
 
     png(outfile, width=width, height=height)
     weightMatrix <- readRDS("weightMatrix.rds")
-    ngenes <<- dim(weightMatrix)[1]
     selectedFrom <<- c()
     selectedTo <<- c()
     melted_weights <- reshape2::melt(weightMatrix)
@@ -489,8 +490,8 @@ server <- function(input, output, session) {
     res <- input$image_click
     yUnit <- (res$domain$bottom - res$domain$top) / ngenes
     xUnit <- (res$domain$right - res$domain$left) / ngenes
-    fromGene <- res$y %/% yUnit + 1
-    toGene <- res$x %/% xUnit + 1
+    fromGene <- selNames[res$y %/% yUnit + 1]
+    toGene <- selNames[res$x %/% xUnit + 1]
     selectedFrom <<- c(selectedFrom, fromGene)
     selectedTo <<- c(selectedTo, toGene)
     cat("From: ", selectedFrom)
