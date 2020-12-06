@@ -55,8 +55,8 @@ ui <- fluidPage(
                      label = "Show Importance Scores",
                      choices = list("True" = 1, "False" = 2), selected = 1),
         data.step = 2,
-        data.intro = "Parameters of inferNetwork when Steady State is False, and
-                      parameters of inferSSNetwork when Steady State is True.
+        data.intro = "These are the parameters of inferNetwork() when Steady State is False, and
+                      the parameters of inferSSNetwork() when Steady State is True.
                       Refer to ?inferNetwork or ?inferSSNetwork for more details."
       )
     ),
@@ -68,7 +68,8 @@ ui <- fluidPage(
                        label = "Infer Network"),
           data.step = 3,
           data.intro = "To infer a network, click here. The result will be saved
-                as ugene.rds and the weight matrix saved as weightMatrix.rds"),
+                as ugene.rds and the weight matrix saved as weightMatrix.rds.
+          To use any other tool, you must do this step first as a prerequisite."),
       ),
 
       # tab switching for rintrojs adapted from
@@ -102,15 +103,20 @@ ui <- fluidPage(
                              data.intro = "Once you have an inferred network, you can simulate it! See
                                           ?simulateUGENE for details."
                            ),
-                           helpText("Leave blank for default"),
-                           numericInput(inputId = "xmin", label = "X min", value = NA),
-                           numericInput(inputId = "xmax", label = "X max", value = NA),
-                           numericInput(inputId = "ymin", label = "Y min", value = NA),
-                           numericInput(inputId = "ymax", label = "Y max", value = NA),
-                           actionButton(inputId = "simulateBtn",
-                                        label = "Simulate"),
-                           br(),
-                           br(),
+                           introBox(
+                             helpText("Leave blank for default"),
+                             numericInput(inputId = "xmin", label = "X min", value = NA),
+                             numericInput(inputId = "xmax", label = "X max", value = NA),
+                             numericInput(inputId = "ymin", label = "Y min", value = NA),
+                             numericInput(inputId = "ymax", label = "Y max", value = NA),
+                             actionButton(inputId = "simulateBtn",
+                                          label = "Simulate"),
+                             br(),
+                             br(),
+                             data.step = 5,
+                             data.intro = "You can control the zoom of the plot here.
+                             The plot will dynamically respond to your input."
+                           ),
                            plotOutput("simTraj")
                                       # dblclick = "simTraj_dblclick",
                                       # brush = brushOpts(
@@ -122,10 +128,11 @@ ui <- fluidPage(
                            introBox(
                              actionButton(inputId = "tuneBtn",
                                           label = "Tune Threshold"),
-                             data.step = 5,
+                             data.step = 6,
                              data.intro = "The default network has all possible node-node interactions, which
-                                  isn't biologically realistic. Here you can tune the threshold of the
-                                  network's importance scores, removing connections with scores below the threshold."
+                                  isn't biologically realistic. Here you can exhaustively search through all
+                             possible model complexities and a Pareto front is plotted. See ?tuneThreshold for
+                             more details."
                            ),
                            fluidRow(
                              splitLayout(cellWidths = c("50%", "50%"),
@@ -139,8 +146,8 @@ ui <- fluidPage(
                                           value = 1),
                              actionButton(inputId = "updateNetwork",
                                           label = "Show Masked Network"),
-                             data.step = 6,
-                             data.intro = "You can visualize the tuned networks in the previous step one at a time."
+                             data.step = 7,
+                             data.intro = "You can visualize the tuned networks one at a time."
                            ),
                            plotOutput("maskedNetwork")
                           ),
@@ -154,9 +161,9 @@ ui <- fluidPage(
                              verbatimTextOutput("image_clickinfo"),
                              wellPanel(actionButton("resetMasks", "Refresh"),
                                        actionButton("customBtn", "Start tuning")),
-                             data.step = 7,
+                             data.step = 8,
                              data.intro = "Finally, you can mask out a custom selection of connections by clicking
-                                        on the grid of the connection. You will see it show up in the selected edges."
+                                        on the grid of the connection. You will see them show up in the selected edges."
                            ),
                            plotOutput("customNetwork"))
                   )
