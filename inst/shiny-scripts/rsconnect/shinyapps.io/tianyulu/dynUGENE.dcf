@@ -5,8 +5,9 @@ account: tianyulu
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3308915
-bundleId: 3952252
+bundleId: 4062175
 url: https://tianyulu.shinyapps.io/dynUGENE/
-when: 1607296587.35205
+when: 1609884895.54689
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: currMask.rds|stepMasks.rds|ugene.rds|weightMatrix.rds
