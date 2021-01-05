@@ -282,6 +282,9 @@ server <- function(input, output, session) {
         stop("Must select some nodes to mask before tuning")
       } else {
         mask <- matrix(data = 1, nrow = ngenes, ncol = ngenes)
+        colnames(mask) <- selNames
+        rownames(mask) <- selNames
+
         for (i in 1:length(selectedFrom)) {
           mask[selectedFrom[i], selectedTo[i]] <- NA
         }
