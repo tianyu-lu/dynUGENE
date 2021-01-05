@@ -115,6 +115,74 @@ Gaussian.
 Sources for code adapted from examples are provided near the code in
 question.
 
+## Functionality
+
+We can learn the architecture and simulate the dynamics of a
+repressilator with `inferNetwork()`:
+
+![](inst/extdata/rep-network.png) ![](inst/extdata/rep-simulation.png)
+
+We can perform a search over possible sparse network architectures with
+`tuneThreshold()`.
+
+![Sparsest possible network architecture](inst/extdata/rep-sparse.png)
+![Step 7 from step-wise search of
+architectures](inst/extdata/rep-network-from-mask7.png)
+
+We can also learn the dynamics of a stochastic repressilator:
+
+![](inst/extdata/rep-stochastic-trajectory.png)
+
+We can also visualize the learned networks for large, steady-state
+datasets:
+
+![A section of the 300x300 gene regulatory network in
+SynTReN300](inst/extdata/syntren-zoom.png)
+
+Load and do inference with repressilator data:
+
+``` r
+library(dynUGENE)
+
+## Infer network
+ugene <- inferNetwork(Repressilator, mtry = 3L)
+
+## Deterministic simulation of the inferred network dynamics
+x0 <- Repressilator[1, 2:7]
+trajectory <- simulateUGENE(ugene, x0)
+plotTrajectory(trajectory, c("p3", "p2", "p1"))
+```
+
+<img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+
+## Stochastic simulation
+trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
+plotTrajectory(trajectory, c("p3", "p2", "p1"))
+```
+
+<img src="man/figures/README-example-2.png" width="100%" />
+
+## Runtime
+
+`inferNetwork()` take about 30 seconds for automatic threshold tuning
+for the Repressilator dataset.
+
+`simulateUGENE()` takes about 3 minutes for simulating 5000 timesteps of
+a 6 component system.
+
+Tests: running the unit and integration tests takes about three minutes
+on a typical laptop.
+
+## Acknowledgements
+
+`dynUGENE` welcomes
+[issues](https://github.com/tianyu-lu/dynUGENE/issues) and other
+contributions.
+
+Logo made with [Wix](https://www.wix.com/logo/maker).
+
 ## References
 
 [Elowitz, M. B., & Leibler, S. (2000). A synthetic oscillatory network
@@ -218,73 +286,3 @@ Winston Chang, Joe Cheng, JJ Allaire, Yihui Xie and Jonathan McPherson
 
 Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report
 Generation in R. *R package* version 1.30.
-
-## Acknowledgements
-
-This package was developed as part of an assessment for 2020 BCB410H:
-Applied Bioinformatics, University of Toronto, Toronto, CANADA.
-`dynUGENE` welcomes
-[issues](https://github.com/tianyu-lu/dynUGENE/issues) and other
-contributions.
-
-Logo made with [Wix](https://www.wix.com/logo/maker).
-
-## Functionality
-
-We can learn the architecture and simulate the dynamics of a
-repressilator with `inferNetwork()`:
-
-![](inst/extdata/rep-network.png) ![](inst/extdata/rep-simulation.png)
-
-We can perform a search over possible sparse network architectures with
-`tuneThreshold()`.
-
-![Sparsest possible network architecture](inst/extdata/rep-sparse.png)
-![Step 7 from step-wise search of
-architectures](inst/extdata/rep-network-from-mask7.png)
-
-We can also learn the dynamics of a stochastic repressilator:
-
-![](inst/extdata/rep-stochastic-trajectory.png)
-
-We can also visualize the learned networks for large, steady-state
-datasets:
-
-![A section of the 300x300 gene regulatory network in
-SynTReN300](inst/extdata/syntren-zoom.png)
-
-Load and do inference with repressilator data:
-
-``` r
-library(dynUGENE)
-
-## Infer network
-ugene <- inferNetwork(Repressilator, mtry = 3L)
-
-## Deterministic simulation of the inferred network dynamics
-x0 <- Repressilator[1, 2:7]
-trajectory <- simulateUGENE(ugene, x0)
-plotTrajectory(trajectory, c("p3", "p2", "p1"))
-```
-
-<img src="man/figures/README-example-1.png" width="100%" />
-
-``` r
-
-## Stochastic simulation
-trajectory <- simulateUGENE(ugene, x0, stochastic = TRUE)
-plotTrajectory(trajectory, c("p3", "p2", "p1"))
-```
-
-<img src="man/figures/README-example-2.png" width="100%" />
-
-## Runtime
-
-`inferNetwork()` take about 30 seconds for automatic threshold tuning
-for the Repressilator dataset.
-
-`simulateUGENE()` takes about 3 minutes for simulating 5000 timesteps of
-a 6 component system.
-
-Tests: running the unit and integration tests takes about three minutes
-on a typical laptop.
